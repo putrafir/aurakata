@@ -177,7 +177,10 @@ export default function Home() {
                 />
               </div>
             ) : (
-              <GuestInterface onSendMessage={handleGuestMessage} />
+              <GuestInterface
+                messages={messages}
+                onSendMessage={handleGuestMessage}
+              />
             )}
 
             {/* Tombol Keluar / Hancurkan Sesi */}
