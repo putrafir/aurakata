@@ -1,0 +1,6 @@
+{
+  "name": "AuraKata",
+  "description": "Platform komunikasi inklusif real-time dengan Generative UI yang reaktif terhadap emosi untuk Teman Tuli dan Orang Dengar.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["speech-to-text", "text-to-speech"]
+}
