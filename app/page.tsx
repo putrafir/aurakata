@@ -76,12 +76,12 @@ export default function Home() {
   };
 
   // 4. LOGIKA PENGIRIMAN PESAN & FIREBASE SYNC
-  const handleGuestMessage = (text: string) => {
-    // Gunakan sendMessage dari Firebase Hook
+  // Di page.tsx bagian handleGuestMessage ubah parameternya:
+  const handleGuestMessage = (text: string, sentiment: Sentiment) => {
     sendMessage({
       text,
       sender: 'guest',
-      sentiment: 'neutral', // Nanti ini diganti dengan hasil balasan Gemini API
+      sentiment: sentiment, // Gunakan sentiment yang dipilih tamu
       timestamp: Date.now(),
     });
   };
