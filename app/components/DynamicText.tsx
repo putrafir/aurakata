@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { motion, Variants } from 'motion/react';
-import { Sentiment } from '../types';
+import { Sentiment } from '../../types';
 
 interface DynamicTextProps {
   text: string;

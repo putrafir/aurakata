@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Smile, Send, LayoutGrid, Heart, Angry, Clock, HelpCircle, Sparkles } from 'lucide-react';
-import { Message, Sentiment } from '../types';
+import { Message, Sentiment } from '../../types';
 import { DynamicText } from './DynamicText';
 
 // 1. TAMBAHKAN PROPS BARU UNTUK TEMPLATE AI & CUSTOM
