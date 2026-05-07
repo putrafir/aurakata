@@ -2,15 +2,17 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { QrCode, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import QRCode from 'react-qr-code'; // <-- Menggunakan library QR Code asli
 
 interface QRModalProps {
   isOpen: boolean;
   onClose: () => void;
   pin: string;
+  fullUrl?: string; // <-- Menambahkan properti fullUrl dari page.tsx
 }
 
-export function QRModal({ isOpen, onClose, pin }: QRModalProps) {
+export function QRModal({ isOpen, onClose, pin, fullUrl = "" }: QRModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -42,8 +44,21 @@ export function QRModal({ isOpen, onClose, pin }: QRModalProps) {
                   <X size={20} />
                 </button>
 
-                <div className="bg-white p-6 rounded-3xl shadow-lg transform rotate-3">
-                  <QrCode size={180} className="text-slate-800" />
+                {/* Render QR Code Asli */}
+                <div className="bg-white p-4 rounded-3xl shadow-lg transform rotate-3 flex items-center justify-center">
+                  {fullUrl ? (
+                    <QRCode 
+                      value={fullUrl} 
+                      size={180} 
+                      level="H" // Error correction level tinggi agar tetap bisa di-scan meski sudutnya miring
+                      bgColor="#ffffff"
+                      fgColor="#1e293b" // Menggunakan warna slate-800 agar senada dengan UI
+                    />
+                  ) : (
+                    <div className="w-[180px] h-[180px] bg-slate-200 animate-pulse rounded-xl flex items-center justify-center text-slate-400 text-sm font-bold">
+                      Memuat QR...
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -64,7 +79,7 @@ export function QRModal({ isOpen, onClose, pin }: QRModalProps) {
 
                 <button 
                   onClick={onClose}
-                  className="w-full btn-3d-green py-4 rounded-2xl text-xl"
+                  className="w-full btn-3d-green py-4 rounded-2xl text-xl font-bold bg-green-500 text-white border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all"
                 >
                   OK, GAS!
                 </button>

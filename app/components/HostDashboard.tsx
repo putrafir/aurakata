@@ -2,22 +2,18 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Smile, Send, ChevronRight, LayoutGrid, Heart, Angry, Clock, HelpCircle } from 'lucide-react';
+import { Smile, Send, LayoutGrid, Heart, Angry, Clock, HelpCircle, Sparkles } from 'lucide-react';
 import { Message, Sentiment } from '../types';
 import { DynamicText } from './DynamicText';
 
+// 1. TAMBAHKAN PROPS BARU UNTUK TEMPLATE AI & CUSTOM
 interface HostDashboardProps {
   messages: Message[];
   onReply: (text: string, sentiment: Sentiment) => void;
   openQR: () => void;
+  smartTemplates: string[];
+  customTemplates: string[];
 }
-
-const SMART_TEMPLATES = [
-  { text: "Berapa harganya?", icon: "💰" },
-  { text: "Sama-sama!", icon: "😊" },
-  { text: "Tunggu sebentar ya.", icon: "⏳" },
-  { text: "OK, saya mengerti.", icon: "👍" },
-];
 
 const EMOTIONS: { label: Sentiment; icon: any; color: string }[] = [
   { label: 'happy', icon: Heart, color: 'bg-emerald-500' },
@@ -27,7 +23,7 @@ const EMOTIONS: { label: Sentiment; icon: any; color: string }[] = [
   { label: 'hurry', icon: Clock, color: 'bg-slate-500' },
 ];
 
-export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps) {
+export function HostDashboard({ messages, onReply, openQR, smartTemplates, customTemplates }: HostDashboardProps) {
   const [inputText, setInputText] = React.useState('');
   const [selectedSentiment, setSelectedSentiment] = React.useState<Sentiment>('neutral');
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -42,14 +38,15 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
     if (inputText.trim()) {
       onReply(inputText, selectedSentiment);
       setInputText('');
+      setSelectedSentiment('neutral'); // Reset aura setelah mengirim
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 max-w-2xl mx-auto shadow-sm border-x border-slate-200">
+    <div className="flex flex-col h-full bg-slate-50 max-w-2xl mx-auto shadow-sm border-x border-slate-200 pt-16 md:pt-0">
       {/* Header */}
       <header className="p-4 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-20">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-12 md:ml-0">
           <div className="w-10 h-10 bg-emerald-100 rounded-2xl flex items-center justify-center">
             <LayoutGrid className="text-emerald-500" size={20} />
           </div>
@@ -60,7 +57,7 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
         </div>
         <button 
           onClick={openQR}
-          className="btn-3d-blue px-4 py-2 rounded-xl text-sm flex items-center gap-2"
+          className="btn-3d-blue px-4 py-2 rounded-xl text-sm flex items-center gap-2 font-bold bg-sky-500 text-white border-b-4 border-sky-700 active:border-b-0 active:translate-y-1 transition-all"
         >
           Lihat QR
         </button>
@@ -69,9 +66,16 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
       {/* Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth"
+        className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth pb-8"
       >
         <AnimatePresence initial={false}>
+          {messages.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
+              <Sparkles size={48} className="mb-4" />
+              <p className="font-bold">Ruangan siap! Menunggu pesan...</p>
+            </div>
+          )}
+          
           {messages.map((msg) => (
             <motion.div
               key={msg.id}
@@ -83,7 +87,7 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
               <div 
                 className={`max-w-[85%] px-6 py-4 rounded-[32px] shadow-sm relative overflow-visible ${
                   msg.sender === 'host' 
-                    ? 'bg-emerald-500 text-white rounded-tr-none' 
+                    ? 'bg-emerald-500 text-white rounded-tr-none border-b-4 border-emerald-700' 
                     : 'bg-white text-slate-800 rounded-tl-none border-b-4 border-slate-200'
                 }`}
               >
@@ -91,20 +95,20 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
                   <DynamicText 
                     text={msg.text} 
                     sentiment={msg.sentiment}
-                    className="text-lg md:text-xl" 
+                    className="text-lg md:text-xl font-bold" 
                   />
                 ) : (
                   <p className="text-lg font-bold font-heading">{msg.text}</p>
                 )}
                 
                 {msg.sender === 'host' && msg.sentiment && (
-                  <div className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md animate-bounce">
+                  <div className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md animate-bounce border-2 border-slate-100">
                     {EMOTIONS.find(e => e.label === msg.sentiment)?.icon && React.createElement(EMOTIONS.find(e => e.label === msg.sentiment)!.icon, { size: 16, className: "text-emerald-500" })}
                   </div>
                 )}
               </div>
               <span className="text-[10px] font-black text-slate-400 mt-2 uppercase tracking-widest px-2">
-                {msg.sender === 'guest' ? 'Suara Orang Dengar' : 'Balasan Anda'} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {msg.sender === 'guest' ? 'Suara Tamu' : 'Balasan Anda'} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </motion.div>
           ))}
@@ -112,28 +116,42 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
       </div>
 
       {/* Bottom Controls */}
-      <div className="p-4 bg-white border-t border-slate-200 space-y-4">
-        {/* Smart Templates */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {SMART_TEMPLATES.map((tpl, i) => (
+      <div className="p-4 bg-white border-t-2 border-slate-200 space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] relative z-30">
+        
+        {/* Template Area (AI & Custom) */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+          
+          {/* AI Smart Templates (Diberi aksen warna berbeda/berkilau) */}
+          {smartTemplates.length > 0 && smartTemplates.map((text, i) => (
             <motion.button
-              key={i}
+              key={`ai-${i}`}
               whileHover={{ y: -2 }}
               whileTap={{ y: 2 }}
-              onClick={() => {
-                setInputText(tpl.text);
-                setSelectedSentiment('happy');
-              }}
-              className="whitespace-nowrap px-4 py-2 bg-slate-100 border-b-4 border-slate-200 rounded-full font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2"
+              onClick={() => setInputText(text)}
+              className="whitespace-nowrap px-4 py-2 bg-amber-50 border-b-4 border-amber-200 rounded-full font-bold text-amber-700 flex items-center gap-2 shadow-sm"
             >
-              <span className="text-lg">{tpl.icon}</span>
-              {tpl.text}
+              <Sparkles size={16} className="text-amber-500" />
+              {text}
+            </motion.button>
+          ))}
+
+          {/* Custom Templates (Tersimpan dari LocalStorage) */}
+          {customTemplates.map((text, i) => (
+            <motion.button
+              key={`custom-${i}`}
+              whileHover={{ y: -2 }}
+              whileTap={{ y: 2 }}
+              onClick={() => setInputText(text)}
+              className="whitespace-nowrap px-4 py-2 bg-slate-100 border-b-4 border-slate-200 rounded-full font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2 transition-colors"
+            >
+              <span className="text-lg">📌</span>
+              {text}
             </motion.button>
           ))}
         </div>
 
         {/* Emotion Selector */}
-        <div className="flex justify-between items-center bg-slate-50 p-2 rounded-2xl border-4 border-slate-100">
+        <div className="flex justify-between items-center bg-slate-50 p-2 rounded-2xl border-2 border-slate-100">
           <div className="flex gap-2">
             {EMOTIONS.map((emo) => {
               const Icon = emo.icon;
@@ -143,8 +161,8 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
                   onClick={() => setSelectedSentiment(emo.label)}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                     selectedSentiment === emo.label 
-                      ? `${emo.color} text-white shadow-lg scale-110 -translate-y-1` 
-                      : 'bg-white text-slate-400 hover:text-slate-600'
+                      ? `${emo.color} text-white shadow-lg scale-110 -translate-y-1 font-bold` 
+                      : 'bg-white text-slate-400 hover:text-slate-600 border-b-2 border-slate-200'
                   }`}
                 >
                   <Icon size={20} />
@@ -152,7 +170,7 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
               );
             })}
           </div>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mr-2">Pilih Aura</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">Pilih Aura</p>
         </div>
 
         {/* Input Area */}
@@ -163,12 +181,16 @@ export function HostDashboard({ messages, onReply, openQR }: HostDashboardProps)
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ketik balasan..."
-            className="flex-1 bg-slate-100 border-none rounded-2xl p-4 font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-100 transition-all placeholder:text-slate-400"
+            className="flex-1 bg-slate-100 border-2 border-slate-200 rounded-2xl p-4 font-bold text-slate-700 outline-none focus:border-emerald-400 focus:bg-white transition-all placeholder:text-slate-400"
           />
           <button 
             onClick={handleSend}
             disabled={!inputText.trim()}
-            className={`${inputText.trim() ? 'btn-3d-green' : 'btn-3d-gray'} w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all`}
+            className={`${
+              inputText.trim() 
+                ? 'bg-emerald-500 text-white border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2' 
+                : 'bg-slate-200 text-slate-400 border-b-8 border-slate-300'
+            } w-16 h-16 rounded-2xl flex items-center justify-center transition-all`}
           >
             <Send size={24} />
           </button>
