@@ -11,6 +11,8 @@ import { Sparkles, Users, MessageSquareText, Settings } from 'lucide-react';
 import { useRoom } from '@/hooks/useRoom';
 import { GuestLobby } from './components/GuestLobby';
 
+
+
 export default function Home() {
   const [state, setState] = React.useState<AppState>({
     phase: 'init',
@@ -18,6 +20,12 @@ export default function Home() {
     roomPin: '',
   });
 
+
+
+  const [isJoinModalOpen, setIsJoinModalOpen] = React.useState(false);
+  const [joinPinInput, setJoinPinInput] = React.useState('');
+
+  // ... state template ...
   const { messages, sendMessage, destroyRoom } = useRoom(state.phase === 'chat' ? state.roomPin : null);
   const [isQRModalOpen, setIsQRModalOpen] = React.useState(false);
 
@@ -55,6 +63,16 @@ export default function Home() {
     setIsQRModalOpen(true);
 
     // TODO: Inisialisasi Firebase Node `/rooms/${newPin}` di sini
+  };
+
+  // LOGIKA JOIN VIA PIN MANUAL
+  const handleJoinWithPin = () => {
+    if (joinPinInput.trim().length >= 4) {
+      setIsJoinModalOpen(false);
+      // Langsung arahkan ke Guest Lobby dengan PIN yang dimasukkan
+      setState({ phase: 'guest-lobby', role: 'guest', roomPin: joinPinInput.trim() });
+      setJoinPinInput('');
+    }
   };
 
   // 3. LOGIKA GEMINI API (Rekomendasi Pintar)
@@ -155,6 +173,15 @@ export default function Home() {
                 <MessageSquareText size={28} className="group-hover:scale-110 transition-transform" />
                 BUAT OBROLAN (HOST)
               </button>
+              <button
+                onClick={() => setIsJoinModalOpen(true)}
+                className="w-full py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 transition-all group shadow-sm"
+              >
+                <Users size={28} className="group-hover:scale-110 transition-transform" />
+                GABUNG VIA PIN (TAMU)
+              </button>
+
+
             </div>
             {/* ... */}
           </motion.div>
@@ -204,6 +231,7 @@ export default function Home() {
               <GuestInterface
                 messages={messages}
                 onSendMessage={handleGuestMessage}
+                currentGuestName={state.guestName}
               />
             )}
 
@@ -281,6 +309,59 @@ export default function Home() {
                 Tutup
               </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Masukkan PIN */}
+      <AnimatePresence>
+        {isJoinModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              className="bg-white rounded-[2rem] w-full max-w-sm p-8 shadow-2xl text-center"
+            >
+              <div className="w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="text-sky-500" size={32} />
+              </div>
+              <h2 className="text-2xl font-black mb-2 text-slate-800 font-heading">Masukkan PIN</h2>
+              <p className="text-slate-500 mb-6 font-medium text-sm">Tanya Host untuk 4 digit PIN ruangan.</p>
+
+              <input
+                type="text"
+                maxLength={4}
+                value={joinPinInput}
+                onChange={(e) => setJoinPinInput(e.target.value.replace(/[^0-9]/g, ''))} // Hanya terima angka
+                onKeyPress={(e) => e.key === 'Enter' && handleJoinWithPin()}
+                placeholder="0000"
+                className="w-full text-center text-4xl tracking-[1em] px-4 py-4 bg-slate-100 rounded-2xl border-4 border-slate-200 focus:border-sky-500 outline-none font-black text-slate-700 mb-6 font-heading"
+                autoFocus
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsJoinModalOpen(false)}
+                  className="flex-1 py-4 bg-slate-200 text-slate-500 font-bold rounded-2xl border-b-4 border-slate-300 active:border-b-0 active:translate-y-1 transition-all"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleJoinWithPin}
+                  disabled={joinPinInput.length < 4}
+                  className={`flex-1 py-4 font-bold rounded-2xl border-b-4 active:border-b-0 active:translate-y-1 transition-all ${joinPinInput.length === 4
+                    ? 'bg-sky-500 text-white border-sky-700'
+                    : 'bg-slate-200 text-slate-400 border-slate-300'
+                    }`}
+                >
+                  Lanjut
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
