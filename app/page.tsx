@@ -10,6 +10,7 @@ import { Message, Sentiment, AppState } from '../types';
 import { Sparkles, Users, MessageSquareText, Settings } from 'lucide-react';
 import { useRoom } from '@/hooks/useRoom';
 import { GuestLobby } from './components/GuestLobby';
+import { LandingPage } from './components/LandingPage';
 
 export default function Home() {
   const [state, setState] = React.useState<AppState>({
@@ -184,50 +185,55 @@ export default function Home() {
 
         {/* FASE 1: LANDING PAGE */}
         {state.phase === 'init' && (
-          <motion.div
+          // <motion.div
+          //   key="lobby"
+          //   initial={{ opacity: 0, y: 20 }}
+          //   animate={{ opacity: 1, y: 0 }}
+          //   exit={{ opacity: 0, y: -20 }}
+          //   className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-8 text-center"
+          // >
+          //   <motion.div
+          //     initial={{ scale: 0.8, opacity: 0 }}
+          //     animate={{ scale: 1, opacity: 1 }}
+          //     className="mb-8"
+          //   >
+          //     <Image
+          //       src="/images/aurakata-logo.png"
+          //       alt="Logo AuraKata"
+          //       width={200}
+          //       height={200}
+          //       className="object-contain"
+          //       priority
+          //     />
+          //   </motion.div>
+
+          //   <h1 className="text-5xl font-black text-slate-800 mb-2 font-heading leading-tight tracking-tight">
+          //     AuraKata
+          //   </h1>
+          //   <p className="text-xl text-slate-500 mb-12 font-medium">Bicara jadi warna, teks jadi rasa.</p>
+
+          //   <div className="w-full space-y-4">
+          //     <button
+          //       onClick={handleCreateRoom}
+          //       className="w-full btn-3d-green py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-green-500 text-white border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all group"
+          //     >
+          //       <MessageSquareText size={28} className="group-hover:scale-110 transition-transform" />
+          //       BUAT OBROLAN (HOST)
+          //     </button>
+          //     <button
+          //       onClick={() => setIsJoinModalOpen(true)}
+          //       className="w-full py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 transition-all group shadow-sm"
+          //     >
+          //       <Users size={28} className="group-hover:scale-110 transition-transform" />
+          //       GABUNG VIA PIN (TAMU)
+          //     </button>
+          //   </div>
+          // </motion.div>
+          <LandingPage
             key="lobby"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-8 text-center"
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="mb-8"
-            >
-              <Image
-                src="/images/aurakata-logo.png"
-                alt="Logo AuraKata"
-                width={200}
-                height={200}
-                className="object-contain"
-                priority
-              />
-            </motion.div>
-
-            <h1 className="text-5xl font-black text-slate-800 mb-2 font-heading leading-tight tracking-tight">
-              AuraKata
-            </h1>
-            <p className="text-xl text-slate-500 mb-12 font-medium">Bicara jadi warna, teks jadi rasa.</p>
-
-            <div className="w-full space-y-4">
-              <button
-                onClick={handleCreateRoom}
-                className="w-full btn-3d-green py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-green-500 text-white border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all group"
-              >
-                <MessageSquareText size={28} className="group-hover:scale-110 transition-transform" />
-                BUAT OBROLAN (HOST)
-              </button>
-              <button
-                onClick={() => setIsJoinModalOpen(true)}
-                className="w-full py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 transition-all group shadow-sm"
-              >
-                <Users size={28} className="group-hover:scale-110 transition-transform" />
-                GABUNG VIA PIN (TAMU)
-              </button>
-            </div>
-          </motion.div>
+            onCreateRoom={handleCreateRoom}
+            onOpenJoinModal={() => setIsJoinModalOpen(true)}
+          />
         )}
 
         {/* FASE 2: LOBBY TAMU (INPUT NAMA) */}
