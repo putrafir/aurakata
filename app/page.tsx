@@ -11,8 +11,6 @@ import { Sparkles, Users, MessageSquareText, Settings } from 'lucide-react';
 import { useRoom } from '@/hooks/useRoom';
 import { GuestLobby } from './components/GuestLobby';
 
-
-
 export default function Home() {
   const [state, setState] = React.useState<AppState>({
     phase: 'init',
@@ -20,95 +18,132 @@ export default function Home() {
     roomPin: '',
   });
 
+  const { messages, sendMessage, destroyRoom, isRoomActive } = useRoom(state.phase === 'chat' ? state.roomPin : null, state.role);
 
-
+  // Modal States
+  const [isQRModalOpen, setIsQRModalOpen] = React.useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = React.useState(false);
   const [joinPinInput, setJoinPinInput] = React.useState('');
 
-  // ... state template ...
-  const { messages, sendMessage, destroyRoom } = useRoom(state.phase === 'chat' ? state.roomPin : null);
-  const [isQRModalOpen, setIsQRModalOpen] = React.useState(false);
-
-  // STATE BARU: AI & Custom Templates
+  // AI & Custom Templates States
   const [smartTemplates, setSmartTemplates] = React.useState<string[]>([]);
   const [customTemplates, setCustomTemplates] = React.useState<string[]>([]);
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = React.useState(false);
   const [newTemplateText, setNewTemplateText] = React.useState('');
 
-  // 1. LOGIKA INISIASI & BACA QR CODE URL
+  // 1. LOGIKA INISIASI TUNGGAL (URL, Session, & Template)
   React.useEffect(() => {
-    // Membaca localStorage untuk Custom Templates
+    // A. Load Custom Templates (Tetap)
     const savedTemplates = localStorage.getItem('aurakata_templates');
     if (savedTemplates) {
-      setCustomTemplates(JSON.parse(savedTemplates));
+      setCustomTemplates(JSON.parse(savedTemplates))
+
     } else {
-      setCustomTemplates(["Berapa totalnya?", "Bisa bicara lebih lambat?"]);
+      setCustomTemplates(["Berapa harganya?", "Bisa bicara lebih lambat?"]);
+    };
+
+    // B. LOGIKA PENYELAMAT SESI (RECOVERY)
+    const savedRole = sessionStorage.getItem('aura_role');
+    const savedPin = sessionStorage.getItem('aura_room');
+    const savedName = sessionStorage.getItem('aura_name');
+    const savedColor = sessionStorage.getItem('aura_color');
+
+    // Cek apakah ada sesi yang bisa dipulihkan
+    if (savedRole && savedPin) {
+      if (savedRole === 'host') {
+        setState({ phase: 'chat', role: 'host', roomPin: savedPin });
+      } else {
+        if (savedName && savedColor) {
+          setState({
+            phase: 'chat',
+            role: 'guest',
+            roomPin: savedPin,
+            guestName: savedName,
+            guestColor: savedColor
+          });
+        } else {
+          setState({ phase: 'guest-lobby', role: 'guest', roomPin: savedPin });
+        }
+      }
+      return; // Sesi berhasil dipulihkan, hentikan pengecekan URL
     }
 
-    // Membaca URL Query (Jika Guest masuk dari scan QR Code)
+    // C. Jika tidak ada sesi, baru cek URL Query (Masuk pertama kali)
     const urlParams = new URLSearchParams(window.location.search);
     const roomFromUrl = urlParams.get('room');
-
     if (roomFromUrl) {
-      // JANGAN langsung ke 'chat', arahkan ke 'guest-lobby' dulu
       setState({ phase: 'guest-lobby', role: 'guest', roomPin: roomFromUrl });
     }
   }, []);
 
-  // 2. LOGIKA GENERATE ROOM & QR URL
+  // 2. LOGIKA AUTO-EXIT (Tendang Tamu jika Room dihapus Host)
+  React.useEffect(() => {
+    if (state.phase === 'chat' && state.role === 'guest' && isRoomActive === false) {
+      alert("Sesi telah diakhiri oleh Host.");
+      handleExit();
+    }
+  }, [isRoomActive, state.phase, state.role]);
+
+  // 3. FUNGSI NAVIGASI & SESI
   const handleCreateRoom = () => {
-    // Generate 4 digit PIN acak
     const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Simpan ke Session agar tahan refresh
+    sessionStorage.setItem('aura_role', 'host');
+    sessionStorage.setItem('aura_room', newPin);
+
     setState({ phase: 'chat', role: 'host', roomPin: newPin });
     setIsQRModalOpen(true);
-
-    // TODO: Inisialisasi Firebase Node `/rooms/${newPin}` di sini
   };
 
-  // LOGIKA JOIN VIA PIN MANUAL
   const handleJoinWithPin = () => {
     if (joinPinInput.trim().length >= 4) {
       setIsJoinModalOpen(false);
-      // Langsung arahkan ke Guest Lobby dengan PIN yang dimasukkan
       setState({ phase: 'guest-lobby', role: 'guest', roomPin: joinPinInput.trim() });
       setJoinPinInput('');
     }
   };
 
-  // 3. LOGIKA GEMINI API (Rekomendasi Pintar)
-  const generateSmartTemplates = async (chatHistory: Message[]) => {
-    // Jangan panggil API jika chat masih kosong
-    if (chatHistory.length === 0) return;
+  const handleJoinSuccess = (name: string, color: string) => {
+    sessionStorage.setItem('aura_role', 'guest');
+    sessionStorage.setItem('aura_name', name);
+    sessionStorage.setItem('aura_color', color);
+    // PIN sudah tersimpan saat masuk via URL/PIN Manual
+    sessionStorage.setItem('aura_room', state.roomPin);
 
-    try {
-      // TODO: Ganti endpoint ini dengan Route API Next.js Anda (misal: /api/gemini)
-      // fetch('/api/gemini', { method: 'POST', body: JSON.stringify({ messages: chatHistory }) })
-
-      // Simulasi balasan Gemini API:
-      console.log("Meminta Gemini menganalisis konteks percakapan...");
-      setTimeout(() => {
-        setSmartTemplates(["Ya, setuju!", "Saya kurang paham", "Bisa diulang?"]);
-      }, 1000);
-    } catch (error) {
-      console.error("Gagal mendapatkan rekomendasi AI", error);
-    }
+    setState(prev => ({
+      ...prev,
+      phase: 'chat',
+      guestName: name,
+      guestColor: color
+    }));
   };
 
-  // 4. LOGIKA PENGIRIMAN PESAN & FIREBASE SYNC
-  // Di page.tsx bagian handleGuestMessage ubah parameternya:
+  const handleExit = () => {
+    if (state.role === 'host') destroyRoom();
+
+    // Bersihkan semua jejak session
+    sessionStorage.removeItem('aura_role');
+    sessionStorage.removeItem('aura_room');
+    sessionStorage.removeItem('aura_name');
+    sessionStorage.removeItem('aura_color');
+
+    setState({ phase: 'init', role: 'host', roomPin: '' });
+    window.history.pushState({}, '', '/');
+  };
+
+  // 4. LOGIKA PENGIRIMAN PESAN & FIREBASE
   const handleGuestMessage = (text: string, sentiment: Sentiment) => {
-    // KITA LANGSUNG KIRIM KE FIREBASE DENGAN DATA LENGKAP
     sendMessage({
       text,
       sender: 'guest',
       sentiment: sentiment,
-      senderName: state.guestName || 'Tamu', // Jika kosong, default 'Tamu'
-      senderColor: state.guestColor,         // Warna identitas Guest
+      senderName: state.guestName || 'Tamu',
+      senderColor: state.guestColor,
       timestamp: Date.now(),
     });
 
-    // TODO: Picu fungsi pemanggilan Gemini API di sini
-    // generateSmartTemplates([...messages, { text, sender: 'guest', ... }]);
+    // TODO: generateSmartTemplates() akan dipanggil di sini nantinya
   };
 
   const handleHostReply = (text: string, sentiment: Sentiment) => {
@@ -120,9 +155,19 @@ export default function Home() {
     });
   };
 
+  // 5. LOGIKA TEMPLATE AI & CUSTOM
+  const generateSmartTemplates = async (chatHistory: Message[]) => {
+    if (chatHistory.length === 0) return;
+    try {
+      console.log("Meminta Gemini menganalisis konteks percakapan...");
+      setTimeout(() => {
+        setSmartTemplates(["Ya, setuju!", "Saya kurang paham", "Bisa diulang?"]);
+      }, 1000);
+    } catch (error) {
+      console.error("Gagal mendapatkan rekomendasi AI", error);
+    }
+  };
 
-
-  // 5. LOGIKA CUSTOM TEMPLATE (Menyimpan ke localStorage)
   const saveNewCustomTemplate = () => {
     if (!newTemplateText.trim()) return;
     const updated = [...customTemplates, newTemplateText];
@@ -136,6 +181,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-sky-200 overflow-x-hidden">
       <AnimatePresence mode="wait">
+
+        {/* FASE 1: LANDING PAGE */}
         {state.phase === 'init' && (
           <motion.div
             key="lobby"
@@ -144,11 +191,10 @@ export default function Home() {
             exit={{ opacity: 0, y: -20 }}
             className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-8 text-center"
           >
-            {/* ... Bagian UI Landing Page Tetap Sama ... */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="mb-8 "
+              className="mb-8"
             >
               <Image
                 src="/images/aurakata-logo.png"
@@ -156,7 +202,7 @@ export default function Home() {
                 width={200}
                 height={200}
                 className="object-contain"
-                priority // Tambahkan ini agar logo di-load pertama kali tanpa delay
+                priority
               />
             </motion.div>
 
@@ -180,28 +226,20 @@ export default function Home() {
                 <Users size={28} className="group-hover:scale-110 transition-transform" />
                 GABUNG VIA PIN (TAMU)
               </button>
-
-
             </div>
-            {/* ... */}
           </motion.div>
         )}
 
+        {/* FASE 2: LOBBY TAMU (INPUT NAMA) */}
         {state.phase === 'guest-lobby' && (
           <GuestLobby
             key="guest-lobby"
             roomPin={state.roomPin}
-            onJoin={(name, color) => {
-              setState(prev => ({
-                ...prev,
-                phase: 'chat',
-                guestName: name,
-                guestColor: color
-              }));
-            }}
+            onJoin={handleJoinSuccess} // Menggunakan fungsi yang menyimpan session
           />
         )}
 
+        {/* FASE 3: RUANG OBROLAN UTAMA */}
         {state.phase === 'chat' && (
           <motion.div
             key="chat-view"
@@ -211,7 +249,6 @@ export default function Home() {
           >
             {state.role === 'host' ? (
               <div className="relative h-full">
-                {/* Tombol Kelola Template (Pojok Kiri Atas) */}
                 <button
                   onClick={() => setIsTemplateManagerOpen(true)}
                   className="absolute top-4 left-4 z-50 bg-white p-3 rounded-full shadow-lg border-2 border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -223,8 +260,8 @@ export default function Home() {
                   messages={messages}
                   onReply={handleHostReply}
                   openQR={() => setIsQRModalOpen(true)}
-                  smartTemplates={smartTemplates}     // Passing state ke Component
-                  customTemplates={customTemplates}   // Passing state ke Component
+                  smartTemplates={smartTemplates}
+                  customTemplates={customTemplates}
                 />
               </div>
             ) : (
@@ -235,32 +272,26 @@ export default function Home() {
               />
             )}
 
-            {/* Tombol Keluar / Hancurkan Sesi */}
             <div className="fixed top-4 right-4 z-50">
               <button
-                onClick={() => {
-                  destroyRoom(); // Data obrolan langsung lenyap dari Firebase!
-                  setState({ phase: 'init', role: 'host', roomPin: '' });
-                  window.history.pushState({}, '', '/');
-                }}
+                onClick={handleExit}
                 className="bg-red-500 text-white font-bold px-4 py-2 rounded-xl border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all"
               >
-                Akhiri Sesi
+                {state.role === 'host' ? 'Akhiri Sesi' : 'Keluar'}
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Modal QR Code - Lempar URL Lengkap */}
+      {/* MODAL COMPONENTS */}
       <QRModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
         pin={state.roomPin}
-        fullUrl={fullQRUrl} // Component QRModal harus merender URL ini ke dalam gambar QR
+        fullUrl={fullQRUrl}
       />
 
-      {/* Modal Kelola Custom Template */}
       <AnimatePresence>
         {isTemplateManagerOpen && (
           <motion.div
@@ -313,7 +344,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Modal Masukkan PIN */}
       <AnimatePresence>
         {isJoinModalOpen && (
           <motion.div
@@ -336,7 +366,7 @@ export default function Home() {
                 type="text"
                 maxLength={4}
                 value={joinPinInput}
-                onChange={(e) => setJoinPinInput(e.target.value.replace(/[^0-9]/g, ''))} // Hanya terima angka
+                onChange={(e) => setJoinPinInput(e.target.value.replace(/[^0-9]/g, ''))}
                 onKeyPress={(e) => e.key === 'Enter' && handleJoinWithPin()}
                 placeholder="0000"
                 className="w-full text-center text-4xl tracking-[1em] px-4 py-4 bg-slate-100 rounded-2xl border-4 border-slate-200 focus:border-sky-500 outline-none font-black text-slate-700 mb-6 font-heading"

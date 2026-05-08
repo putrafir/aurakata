@@ -4,36 +4,44 @@ import { ref, onValue, push, remove, set } from 'firebase/database';
 import { db } from '../lib/firebase';
 import { Message } from '../types';
 
-export function useRoom(roomPin: string | null) {
+// PERUBAHAN: Tambahkan parameter `role`
+export function useRoom(roomPin: string | null, role: 'host' | 'guest' | null = null) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isRoomActive, setIsRoomActive] = useState(false);
+  const [isRoomActive, setIsRoomActive] = useState<boolean | null>(null); 
 
   useEffect(() => {
     if (!roomPin) {
       setMessages([]);
-      setIsRoomActive(false);
+      setIsRoomActive(null); // Kembalikan ke null saat kosong
       return;
     }
 
-    // Referensi ke spesifik room di database
     const roomRef = ref(db, `rooms/${roomPin}`);
     const messagesRef = ref(db, `rooms/${roomPin}/messages`);
 
-    // Tandai bahwa room ini aktif
-    set(ref(db, `rooms/${roomPin}/status`), 'active');
-    setIsRoomActive(true);
+    // PERBAIKAN KRUSIAL:
+    // Jika yang memanggil hook ini adalah Host, buat node 'status: active' 
+    // agar Firebase mengakui ruangan ini ADA (tidak dihapus karena kosong).
+    if (role === 'host') {
+      set(ref(db, `rooms/${roomPin}/status`), 'active');
+    }
+    
+    const unsubscribeRoom = onValue(roomRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setIsRoomActive(true);
+      } else {
+        setIsRoomActive(false); 
+      }
+    });
 
-    // Listener Real-time: Setiap ada data baru, langsung update state
-    const unsubscribe = onValue(messagesRef, (snapshot) => {
+    const unsubscribeMessages = onValue(messagesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Konversi Object dari Firebase menjadi Array of Messages
         const messageList = Object.keys(data).map((key) => ({
           ...data[key],
-          id: key, // Menggunakan Firebase Push ID sebagai Key
+          id: key,
         }));
         
-        // Urutkan berdasarkan timestamp
         messageList.sort((a, b) => a.timestamp - b.timestamp);
         setMessages(messageList);
       } else {
@@ -41,30 +49,25 @@ export function useRoom(roomPin: string | null) {
       }
     });
 
-    // Cleanup listener saat komponen di-unmount atau room berubah
-    return () => unsubscribe();
-  }, [roomPin]);
+    return () => {
+      unsubscribeRoom();
+      unsubscribeMessages();
+    };
+  }, [roomPin, role]);
 
-  // Fungsi untuk mengirim pesan
   const sendMessage = async (messageData: Omit<Message, 'id'>) => {
     if (!roomPin) return;
     const messagesRef = ref(db, `rooms/${roomPin}/messages`);
     await push(messagesRef, messageData);
   };
 
-  // Fungsi untuk menghancurkan room demi privasi
   const destroyRoom = async () => {
     if (!roomPin) return;
     const roomRef = ref(db, `rooms/${roomPin}`);
-    await remove(roomRef); // Menghapus SEMUA isi obrolan dari database
+    await remove(roomRef);
     setMessages([]);
     setIsRoomActive(false);
   };
 
-  return {
-    messages,
-    sendMessage,
-    destroyRoom,
-    isRoomActive
-  };
+  return { messages, sendMessage, destroyRoom, isRoomActive };
 }
