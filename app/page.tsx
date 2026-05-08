@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { Message, Sentiment, AppState } from '../types';
 import { Sparkles, Users, MessageSquareText, Settings } from 'lucide-react';
 import { useRoom } from '@/hooks/useRoom';
+import { GuestLobby } from './components/GuestLobby';
 
 export default function Home() {
   const [state, setState] = React.useState<AppState>({
@@ -41,8 +42,8 @@ export default function Home() {
     const roomFromUrl = urlParams.get('room');
 
     if (roomFromUrl) {
-      setState({ phase: 'chat', role: 'guest', roomPin: roomFromUrl });
-      // TODO: Panggil fungsi Firebase listener untuk roomFromUrl di sini
+      // JANGAN langsung ke 'chat', arahkan ke 'guest-lobby' dulu
+      setState({ phase: 'guest-lobby', role: 'guest', roomPin: roomFromUrl });
     }
   }, []);
 
@@ -78,12 +79,18 @@ export default function Home() {
   // 4. LOGIKA PENGIRIMAN PESAN & FIREBASE SYNC
   // Di page.tsx bagian handleGuestMessage ubah parameternya:
   const handleGuestMessage = (text: string, sentiment: Sentiment) => {
+    // KITA LANGSUNG KIRIM KE FIREBASE DENGAN DATA LENGKAP
     sendMessage({
       text,
       sender: 'guest',
-      sentiment: sentiment, // Gunakan sentiment yang dipilih tamu
+      sentiment: sentiment,
+      senderName: state.guestName || 'Tamu', // Jika kosong, default 'Tamu'
+      senderColor: state.guestColor,         // Warna identitas Guest
       timestamp: Date.now(),
     });
+
+    // TODO: Picu fungsi pemanggilan Gemini API di sini
+    // generateSmartTemplates([...messages, { text, sender: 'guest', ... }]);
   };
 
   const handleHostReply = (text: string, sentiment: Sentiment) => {
@@ -111,7 +118,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-sky-200 overflow-x-hidden">
       <AnimatePresence mode="wait">
-        {state.phase === 'init' ? (
+        {state.phase === 'init' && (
           <motion.div
             key="lobby"
             initial={{ opacity: 0, y: 20 }}
@@ -151,7 +158,24 @@ export default function Home() {
             </div>
             {/* ... */}
           </motion.div>
-        ) : (
+        )}
+
+        {state.phase === 'guest-lobby' && (
+          <GuestLobby
+            key="guest-lobby"
+            roomPin={state.roomPin}
+            onJoin={(name, color) => {
+              setState(prev => ({
+                ...prev,
+                phase: 'chat',
+                guestName: name,
+                guestColor: color
+              }));
+            }}
+          />
+        )}
+
+        {state.phase === 'chat' && (
           <motion.div
             key="chat-view"
             initial={{ opacity: 0 }}
@@ -191,7 +215,7 @@ export default function Home() {
                   setState({ phase: 'init', role: 'host', roomPin: '' });
                   window.history.pushState({}, '', '/');
                 }}
-              // ... className tetap
+                className="bg-red-500 text-white font-bold px-4 py-2 rounded-xl border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all"
               >
                 Akhiri Sesi
               </button>
