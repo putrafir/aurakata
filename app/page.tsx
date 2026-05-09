@@ -266,12 +266,12 @@ export default function Home() {
             user={currentUser}
             templates={customTemplates}
             onAddTemplate={(text) => {
-              // Gunakan variabel sementara untuk memperbarui State & Firebase
-              setNewTemplateText(text);
-              saveNewCustomTemplate(); // Memanggil fungsi tersentralisasi di atas
+              const updated = [...customTemplates, text];
+              setCustomTemplates(updated);
+              set(ref(db, `users/${currentUser.uid}/templates`), updated);
             }}
             onDeleteTemplate={(idx) => {
-              deleteCustomTemplate(idx); // Memanggil fungsi tersentralisasi di atas
+              deleteCustomTemplate(idx);
             }}
             onLogout={() => {
               handleLogout();
