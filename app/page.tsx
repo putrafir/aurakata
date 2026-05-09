@@ -41,6 +41,7 @@ export default function Home() {
   const [customTemplates, setCustomTemplates] = React.useState<string[]>([]);
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = React.useState(false);
   const [newTemplateText, setNewTemplateText] = React.useState('');
+  const [fullQRUrl, setFullQRUrl] = React.useState(''); // <-- TAMBAHKAN INI
 
   // 1. LOGIKA INISIASI TUNGGAL (URL, Session, & Template Awal)
   React.useEffect(() => {
@@ -84,17 +85,19 @@ export default function Home() {
 
   // 2. LOGIKA PANTAU STATUS LOGIN & AMBIL TEMPLATE FIREBASE
   React.useEffect(() => {
+    // TAMBAHKAN BARIS PENJAGA INI:
+    if (!auth) return;
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
-        // PERBAIKAN 2: Ambil template dari Firebase jika sudah login
         const userRef = ref(db, `users/${user.uid}/templates`);
         const snapshot = await get(userRef);
 
         if (snapshot.exists()) {
-          setCustomTemplates(snapshot.val()); // Load data dari cloud
+          setCustomTemplates(snapshot.val());
         } else {
-          set(userRef, customTemplates); // Buat data baru di cloud
+          set(userRef, customTemplates);
         }
       } else {
         setCurrentUser(null);
@@ -111,6 +114,13 @@ export default function Home() {
       handleExit();
     }
   }, [isRoomActive, state.phase, state.role]);
+
+  // LOGIKA AMAN UNTUK GENERATE URL QR CODE (Mencegah Hydration Error)
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && state.roomPin) {
+      setFullQRUrl(`${window.location.origin}?room=${state.roomPin}`);
+    }
+  }, [state.roomPin]);
 
   // 4. FUNGSI NAVIGASI & SESI
   const handleCreateRoom = () => {
@@ -231,7 +241,7 @@ export default function Home() {
     }
   };
 
-  const fullQRUrl = typeof window !== 'undefined' ? `${window.location.origin}?room=${state.roomPin}` : '';
+  // const fullQRUrl = typeof window !== 'undefined' ? `${window.location.origin}?room=${state.roomPin}` : '';
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-sky-200 overflow-x-hidden">
