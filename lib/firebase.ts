@@ -14,17 +14,10 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// 1. Inisialisasi Aplikasi Firebase (Aman di Server maupun Client)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Mencegah inisialisasi ulang saat Next.js melakukan Hot Reload
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
-
-// 2. Isolasi Firebase Auth (HANYA jalan di Browser)
-let auth: any = null;
-let googleProvider: any = null;
-
-if (typeof window !== 'undefined') {
-  auth = getAuth(app);
-  googleProvider = new GoogleAuthProvider();
-}
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 export { db, auth, googleProvider };
