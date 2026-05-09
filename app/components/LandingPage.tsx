@@ -71,12 +71,12 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                         {currentUser ? (
                             <div className="flex items-center gap-3 border-l-2 border-slate-200 pl-6 ml-2">
                                 <button onClick={onProfileClick} className="hover:scale-105 hover:shadow-md transition-all rounded-full">
-                                    <Image
-                                        src={currentUser.photoURL || ''}
+                                    <img
+                                        src={currentUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp'}
                                         alt="Profile"
                                         width={28}
                                         height={28}
-                                        className="rounded-full border-2 border-emerald-200"
+                                        className="rounded-full border-2 border-emerald-200 object-cover"
                                     />
                                 </button>
                                 <button
@@ -140,12 +140,12 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                                 {currentUser ? (
                                     <div className="flex items-center justify-between py-2 border-b border-slate-100">
                                         <button onClick={onProfileClick} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
-                                            <Image
-                                                src={currentUser.photoURL || ''}
+                                            <img
+                                                src={currentUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp'}
                                                 alt="Profile"
                                                 width={24}
                                                 height={24}
-                                                className="rounded-full"
+                                                className="rounded-full object-cover"
                                             />
                                             <span className="text-xs font-bold text-slate-700">{currentUser.displayName}</span>
                                         </button>
