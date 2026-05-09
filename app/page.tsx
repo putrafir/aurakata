@@ -5,12 +5,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import { HostDashboard } from './components/HostDashboard';
 import { GuestInterface } from './components/GuestInterface';
 import { QRModal } from './components/QRModal';
-import Image from 'next/image';
-import { Message, Sentiment, AppState } from '../types';
-import { Sparkles, Users, MessageSquareText, Settings } from 'lucide-react';
-import { useRoom } from '@/hooks/useRoom';
 import { GuestLobby } from './components/GuestLobby';
 import { LandingPage } from './components/LandingPage';
+import { LoginModal } from './components/LoginModal';
+import { ProfileView } from './components/ProfileView';
+
+import { Message, Sentiment, AppState } from '../types';
+import { Settings, Users } from 'lucide-react';
+import { useRoom } from '@/hooks/useRoom';
+
+// FIREBASE IMPORTS
+import { signInWithPopup, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth, googleProvider, db } from '../lib/firebase';
+import { ref, get, set } from 'firebase/database'; // <-- PERBAIKAN 1: Import ini wajib ada
 
 export default function Home() {
   const [state, setState] = React.useState<AppState>({
@@ -18,6 +25,9 @@ export default function Home() {
     role: 'host',
     roomPin: '',
   });
+
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = React.useState(false);
 
   const { messages, sendMessage, destroyRoom, isRoomActive } = useRoom(state.phase === 'chat' ? state.roomPin : null, state.role);
 
@@ -32,24 +42,20 @@ export default function Home() {
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = React.useState(false);
   const [newTemplateText, setNewTemplateText] = React.useState('');
 
-  // 1. LOGIKA INISIASI TUNGGAL (URL, Session, & Template)
+  // 1. LOGIKA INISIASI TUNGGAL (URL, Session, & Template Awal)
   React.useEffect(() => {
-    // A. Load Custom Templates (Tetap)
     const savedTemplates = localStorage.getItem('aurakata_templates');
     if (savedTemplates) {
-      setCustomTemplates(JSON.parse(savedTemplates))
-
+      setCustomTemplates(JSON.parse(savedTemplates));
     } else {
       setCustomTemplates(["Berapa harganya?", "Bisa bicara lebih lambat?"]);
-    };
+    }
 
-    // B. LOGIKA PENYELAMAT SESI (RECOVERY)
     const savedRole = sessionStorage.getItem('aura_role');
     const savedPin = sessionStorage.getItem('aura_room');
     const savedName = sessionStorage.getItem('aura_name');
     const savedColor = sessionStorage.getItem('aura_color');
 
-    // Cek apakah ada sesi yang bisa dipulihkan
     if (savedRole && savedPin) {
       if (savedRole === 'host') {
         setState({ phase: 'chat', role: 'host', roomPin: savedPin });
@@ -66,10 +72,9 @@ export default function Home() {
           setState({ phase: 'guest-lobby', role: 'guest', roomPin: savedPin });
         }
       }
-      return; // Sesi berhasil dipulihkan, hentikan pengecekan URL
+      return;
     }
 
-    // C. Jika tidak ada sesi, baru cek URL Query (Masuk pertama kali)
     const urlParams = new URLSearchParams(window.location.search);
     const roomFromUrl = urlParams.get('room');
     if (roomFromUrl) {
@@ -77,7 +82,29 @@ export default function Home() {
     }
   }, []);
 
-  // 2. LOGIKA AUTO-EXIT (Tendang Tamu jika Room dihapus Host)
+  // 2. LOGIKA PANTAU STATUS LOGIN & AMBIL TEMPLATE FIREBASE
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        // PERBAIKAN 2: Ambil template dari Firebase jika sudah login
+        const userRef = ref(db, `users/${user.uid}/templates`);
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+          setCustomTemplates(snapshot.val()); // Load data dari cloud
+        } else {
+          set(userRef, customTemplates); // Buat data baru di cloud
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 3. LOGIKA AUTO-EXIT
   React.useEffect(() => {
     if (state.phase === 'chat' && state.role === 'guest' && isRoomActive === false) {
       alert("Sesi telah diakhiri oleh Host.");
@@ -85,14 +112,11 @@ export default function Home() {
     }
   }, [isRoomActive, state.phase, state.role]);
 
-  // 3. FUNGSI NAVIGASI & SESI
+  // 4. FUNGSI NAVIGASI & SESI
   const handleCreateRoom = () => {
     const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-
-    // Simpan ke Session agar tahan refresh
     sessionStorage.setItem('aura_role', 'host');
     sessionStorage.setItem('aura_room', newPin);
-
     setState({ phase: 'chat', role: 'host', roomPin: newPin });
     setIsQRModalOpen(true);
   };
@@ -105,11 +129,29 @@ export default function Home() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      console.error("Error login:", error);
+      alert("Gagal login dengan Google.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setCurrentUser(null);
+    } catch (error) {
+      console.error("Error logout:", error);
+    }
+  };
+
   const handleJoinSuccess = (name: string, color: string) => {
     sessionStorage.setItem('aura_role', 'guest');
     sessionStorage.setItem('aura_name', name);
     sessionStorage.setItem('aura_color', color);
-    // PIN sudah tersimpan saat masuk via URL/PIN Manual
     sessionStorage.setItem('aura_room', state.roomPin);
 
     setState(prev => ({
@@ -122,18 +164,15 @@ export default function Home() {
 
   const handleExit = () => {
     if (state.role === 'host') destroyRoom();
-
-    // Bersihkan semua jejak session
     sessionStorage.removeItem('aura_role');
     sessionStorage.removeItem('aura_room');
     sessionStorage.removeItem('aura_name');
     sessionStorage.removeItem('aura_color');
-
     setState({ phase: 'init', role: 'host', roomPin: '' });
     window.history.pushState({}, '', '/');
   };
 
-  // 4. LOGIKA PENGIRIMAN PESAN & FIREBASE
+  // 5. LOGIKA PENGIRIMAN PESAN
   const handleGuestMessage = (text: string, sentiment: Sentiment) => {
     sendMessage({
       text,
@@ -143,8 +182,7 @@ export default function Home() {
       senderColor: state.guestColor,
       timestamp: Date.now(),
     });
-
-    // TODO: generateSmartTemplates() akan dipanggil di sini nantinya
+    // generateSmartTemplates() akan dipanggil di sini nantinya
   };
 
   const handleHostReply = (text: string, sentiment: Sentiment) => {
@@ -156,7 +194,7 @@ export default function Home() {
     });
   };
 
-  // 5. LOGIKA TEMPLATE AI & CUSTOM
+  // 6. LOGIKA TEMPLATE AI & CUSTOM (SINKRONISASI FIREBASE)
   const generateSmartTemplates = async (chatHistory: Message[]) => {
     if (chatHistory.length === 0) return;
     try {
@@ -169,12 +207,28 @@ export default function Home() {
     }
   };
 
+  // PERBAIKAN 3: Fungsi simpan & hapus ini bisa mendeteksi apakah user sedang login atau tidak
   const saveNewCustomTemplate = () => {
     if (!newTemplateText.trim()) return;
     const updated = [...customTemplates, newTemplateText];
     setCustomTemplates(updated);
-    localStorage.setItem('aurakata_templates', JSON.stringify(updated));
     setNewTemplateText('');
+
+    if (currentUser) {
+      set(ref(db, `users/${currentUser.uid}/templates`), updated);
+    } else {
+      localStorage.setItem('aurakata_templates', JSON.stringify(updated));
+    }
+  };
+
+  const deleteCustomTemplate = (idx: number) => {
+    const updated = customTemplates.filter((_, i) => i !== idx);
+    setCustomTemplates(updated);
+    if (currentUser) {
+      set(ref(db, `users/${currentUser.uid}/templates`), updated);
+    } else {
+      localStorage.setItem('aurakata_templates', JSON.stringify(updated));
+    }
   };
 
   const fullQRUrl = typeof window !== 'undefined' ? `${window.location.origin}?room=${state.roomPin}` : '';
@@ -185,63 +239,44 @@ export default function Home() {
 
         {/* FASE 1: LANDING PAGE */}
         {state.phase === 'init' && (
-          // <motion.div
-          //   key="lobby"
-          //   initial={{ opacity: 0, y: 20 }}
-          //   animate={{ opacity: 1, y: 0 }}
-          //   exit={{ opacity: 0, y: -20 }}
-          //   className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-8 text-center"
-          // >
-          //   <motion.div
-          //     initial={{ scale: 0.8, opacity: 0 }}
-          //     animate={{ scale: 1, opacity: 1 }}
-          //     className="mb-8"
-          //   >
-          //     <Image
-          //       src="/images/aurakata-logo.png"
-          //       alt="Logo AuraKata"
-          //       width={200}
-          //       height={200}
-          //       className="object-contain"
-          //       priority
-          //     />
-          //   </motion.div>
-
-          //   <h1 className="text-5xl font-black text-slate-800 mb-2 font-heading leading-tight tracking-tight">
-          //     AuraKata
-          //   </h1>
-          //   <p className="text-xl text-slate-500 mb-12 font-medium">Bicara jadi warna, teks jadi rasa.</p>
-
-          //   <div className="w-full space-y-4">
-          //     <button
-          //       onClick={handleCreateRoom}
-          //       className="w-full btn-3d-green py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-green-500 text-white border-b-8 border-green-700 active:border-b-0 active:translate-y-2 transition-all group"
-          //     >
-          //       <MessageSquareText size={28} className="group-hover:scale-110 transition-transform" />
-          //       BUAT OBROLAN (HOST)
-          //     </button>
-          //     <button
-          //       onClick={() => setIsJoinModalOpen(true)}
-          //       className="w-full py-5 px-8 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 transition-all group shadow-sm"
-          //     >
-          //       <Users size={28} className="group-hover:scale-110 transition-transform" />
-          //       GABUNG VIA PIN (TAMU)
-          //     </button>
-          //   </div>
-          // </motion.div>
           <LandingPage
             key="lobby"
             onCreateRoom={handleCreateRoom}
             onOpenJoinModal={() => setIsJoinModalOpen(true)}
+            onLoginClick={() => setIsLoginModalOpen(true)}
+            onLogoutClick={handleLogout}
+            currentUser={currentUser}
+            onProfileClick={() => setState(prev => ({ ...prev, phase: 'profile' }))}
           />
         )}
 
-        {/* FASE 2: LOBBY TAMU (INPUT NAMA) */}
+        {/* FASE PROFIL */}
+        {state.phase === 'profile' && currentUser && (
+          <ProfileView
+            user={currentUser}
+            templates={customTemplates}
+            onAddTemplate={(text) => {
+              // Gunakan variabel sementara untuk memperbarui State & Firebase
+              setNewTemplateText(text);
+              saveNewCustomTemplate(); // Memanggil fungsi tersentralisasi di atas
+            }}
+            onDeleteTemplate={(idx) => {
+              deleteCustomTemplate(idx); // Memanggil fungsi tersentralisasi di atas
+            }}
+            onLogout={() => {
+              handleLogout();
+              setState({ ...state, phase: 'init' });
+            }}
+            onBack={() => setState({ ...state, phase: 'init' })}
+          />
+        )}
+
+        {/* FASE 2: LOBBY TAMU */}
         {state.phase === 'guest-lobby' && (
           <GuestLobby
             key="guest-lobby"
             roomPin={state.roomPin}
-            onJoin={handleJoinSuccess} // Menggunakan fungsi yang menyimpan session
+            onJoin={handleJoinSuccess}
           />
         )}
 
@@ -315,7 +350,7 @@ export default function Home() {
                   className="flex-1 px-4 py-3 bg-slate-100 rounded-xl border-2 border-slate-200 focus:border-sky-500 outline-none"
                 />
                 <button
-                  onClick={saveNewCustomTemplate}
+                  onClick={saveNewCustomTemplate} // Menggunakan fungsi tersentralisasi
                   className="bg-sky-500 text-white font-bold px-4 rounded-xl border-b-4 border-sky-700 active:border-b-0 active:translate-y-1"
                 >
                   Simpan
@@ -327,11 +362,7 @@ export default function Home() {
                   <div key={idx} className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center">
                     <span className="text-slate-600 font-medium">{tpl}</span>
                     <button
-                      onClick={() => {
-                        const updated = customTemplates.filter((_, i) => i !== idx);
-                        setCustomTemplates(updated);
-                        localStorage.setItem('aurakata_templates', JSON.stringify(updated));
-                      }}
+                      onClick={() => deleteCustomTemplate(idx)} // Menggunakan fungsi tersentralisasi
                       className="text-red-500 text-sm font-bold"
                     >
                       Hapus
@@ -401,6 +432,12 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginGoogle={handleGoogleLogin}
+      />
     </div>
   );
 }

@@ -13,26 +13,27 @@ import {
     Mic,
     QrCode,
     Menu,
-    X
+    X,
+    LogOut // <-- 1. Saya tambahkan icon LogOut untuk menu mobile
 } from "lucide-react";
 import Image from 'next/image';
 
 interface LandingPageProps {
     onCreateRoom?: () => void;
     onOpenJoinModal?: () => void;
+    onLoginClick?: () => void;
+    onLogoutClick?: () => void;
+    onProfileClick?: () => void;
+    currentUser?: any;
 }
 
-export function LandingPage({ onCreateRoom, onOpenJoinModal }: LandingPageProps) {
+export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLogoutClick, onProfileClick, currentUser }: LandingPageProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     // Fungsi untuk scroll ke atas dengan mulus
     const scrollToTop = () => {
         setIsMobileMenuOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handleLoginClick = () => {
-        alert("Fitur Login dan Registrasi akan segera hadir di Fase 2!");
     };
 
     return (
@@ -59,21 +60,40 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal }: LandingPageProps)
                         <a href="#misi" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors">Visi Kita</a>
                         <a href="#fitur" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors">Fitur</a>
 
-
                         <button
                             onClick={scrollToTop}
                             className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors"
-
                         >
                             Masuk Sesi
                         </button>
-                        <button
-                            onClick={handleLoginClick}
-                            className="px-5 py-2 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors"
 
-                        >
-                            Login
-                        </button>
+                        {/* 2. PERBAIKAN: Logika Tampil Profil / Login (Desktop) */}
+                        {currentUser ? (
+                            <div className="flex items-center gap-3 border-l-2 border-slate-200 pl-6 ml-2">
+                                <button onClick={onProfileClick} className="hover:scale-105 hover:shadow-md transition-all rounded-full">
+                                    <Image
+                                        src={currentUser.photoURL || ''}
+                                        alt="Profile"
+                                        width={28}
+                                        height={28}
+                                        className="rounded-full border-2 border-emerald-200"
+                                    />
+                                </button>
+                                <button
+                                    onClick={onLogoutClick}
+                                    className="text-[10px] font-black uppercase tracking-widest text-rose-400 hover:text-rose-500 transition-colors"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={onLoginClick}
+                                className="px-5 py-2 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors"
+                            >
+                                Login
+                            </button>
+                        )}
                     </div>
 
                     {/* Mobile Hamburger Button */}
@@ -112,18 +132,35 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal }: LandingPageProps)
                                 <button
                                     onClick={scrollToTop}
                                     className="text-left text-xs font-black uppercase tracking-widest text-slate-500 py-2 border-b border-slate-100"
-
                                 >
                                     Masuk Sesi
                                 </button>
-                                <button
-                                    onClick={handleLoginClick}
-                                    className="mt-2 px-5 py-3 bg-sky-100 text-sky-700 rounded-xl text-xs font-black uppercase tracking-widest text-center"
 
-                                >
-                                    Login
-                                </button>
-
+                                {/* 3. PERBAIKAN: Logika Tampil Profil / Login (Mobile) */}
+                                {currentUser ? (
+                                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                                        <button onClick={onProfileClick} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                                            <Image
+                                                src={currentUser.photoURL || ''}
+                                                alt="Profile"
+                                                width={24}
+                                                height={24}
+                                                className="rounded-full"
+                                            />
+                                            <span className="text-xs font-bold text-slate-700">{currentUser.displayName}</span>
+                                        </button>
+                                        <button onClick={onLogoutClick} className="text-rose-400">
+                                            <LogOut size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={onLoginClick}
+                                        className="mt-2 px-5 py-3 bg-sky-100 text-sky-700 rounded-xl text-xs font-black uppercase tracking-widest text-center"
+                                    >
+                                        Login
+                                    </button>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -288,7 +325,8 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal }: LandingPageProps)
             <section id="misi" className="bg-white border-y-2 border-slate-200 py-24 scroll-mt-24">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-16">
-                        <span className="text-xls font-black uppercase tracking-widest text-emerald-600">Misi Kami</span>
+                        {/* 4. PERBAIKAN TYPO: text-xls diganti jadi text-xs */}
+                        <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Misi Kami</span>
                         <h2 className="text-4xl font-black text-slate-800 mt-2 tracking-tight">Meruntuhkan Tembok Komunikasi</h2>
                     </div>
 
@@ -369,7 +407,8 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal }: LandingPageProps)
                         </div>
 
                         <div className="order-1 md:order-2">
-                            <span className="text-xls font-black uppercase tracking-widest text-sky-600">Teknologi Inklusi</span>
+                            {/* 5. PERBAIKAN TYPO: text-xls diganti jadi text-xs */}
+                            <span className="text-xs font-black uppercase tracking-widest text-sky-600">Teknologi Inklusi</span>
                             <h2 className="text-4xl font-black text-slate-800 mt-2 mb-8 tracking-tight">Solusi Pintar untuk Setiap Kata</h2>
 
                             <ul className="space-y-8">

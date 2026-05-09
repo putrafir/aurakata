@@ -11,11 +11,11 @@ export interface Message {
 }
 
 export interface AppState {
-  phase: 'init' | 'guest-lobby'| 'chat';
+  phase: 'init' | 'guest-lobby'| 'chat' | 'profile';
   role: 'host' | 'guest';
   roomPin: string;
   guestName?: string;
-   guestColor?: string;
+  guestColor?: string;
 }
 
 // --- TAMBAHAN BARU: Untuk Backend & Integrasi Gemini API ---
