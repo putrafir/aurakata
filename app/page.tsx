@@ -300,12 +300,6 @@ export default function Home() {
           >
             {state.role === 'host' ? (
               <div className="relative h-full">
-                <button
-                  onClick={() => setIsTemplateManagerOpen(true)}
-                  className="absolute top-4 left-4 z-50 bg-white p-3 rounded-full shadow-lg border-2 border-slate-200 text-slate-600 hover:bg-slate-50"
-                >
-                  <Settings size={20} />
-                </button>
 
                 <HostDashboard
                   messages={messages}
@@ -313,6 +307,8 @@ export default function Home() {
                   openQR={() => setIsQRModalOpen(true)}
                   smartTemplates={smartTemplates}
                   customTemplates={customTemplates}
+                  onExit={handleExit} // ✅ Pindahkan kontrol Keluar ke dalam Header HostDashboard
+                  onAddTemplateClick={() => setIsTemplateManagerOpen(true)} // ✅ Buka modal template
                 />
               </div>
             ) : (
@@ -320,17 +316,11 @@ export default function Home() {
                 messages={messages}
                 onSendMessage={handleGuestMessage}
                 currentGuestName={state.guestName}
+                onExit={handleExit}
               />
             )}
 
-            <div className="fixed top-4 right-4 z-50">
-              <button
-                onClick={handleExit}
-                className="bg-red-500 text-white font-bold px-4 py-2 rounded-xl border-b-4 border-red-700 active:border-b-0 active:translate-y-1 transition-all"
-              >
-                {state.role === 'host' ? 'Akhiri Sesi' : 'Keluar'}
-              </button>
-            </div>
+
           </motion.div>
         )}
       </AnimatePresence>
