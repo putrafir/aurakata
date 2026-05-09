@@ -10,7 +10,7 @@ interface GuestInterfaceProps {
   messages: Message[];
   onSendMessage: (text: string, sentiment: Sentiment) => void;
   currentGuestName?: string;
-  onExit: () => void; // <-- 1. Tambahkan Props onExit
+  onExit: () => void;
 }
 
 const EMOTIONS: { label: Sentiment; icon: any; color: string }[] = [
@@ -28,27 +28,6 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
   const [isSupported, setIsSupported] = React.useState(true);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const recognitionRef = React.useRef<any>(null);
-
-  // Text-To-Speech: Melacak pesan terakhir Host agar bisa dibacakan
-  const [lastReadMessageId, setLastReadMessageId] = React.useState<string | null>(null);
-  const lastHostMessage = [...messages].reverse().find(m => m.sender === 'host');
-
-  React.useEffect(() => {
-    if (lastHostMessage && lastHostMessage.id !== lastReadMessageId) {
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(lastHostMessage.text);
-        utterance.lang = 'id-ID';
-
-        // Modifikasi intonasi suara robot sesuai Aura/Mood!
-        if (lastHostMessage.sentiment === 'hurry') utterance.rate = 1.5;
-        else if (lastHostMessage.sentiment === 'angry') { utterance.pitch = 0.5; utterance.rate = 1.2; }
-        else if (lastHostMessage.sentiment === 'happy') utterance.pitch = 1.5;
-
-        window.speechSynthesis.speak(utterance);
-        setLastReadMessageId(lastHostMessage.id);
-      }
-    }
-  }, [lastHostMessage, lastReadMessageId]);
 
   // Auto-scroll chat
   React.useEffect(() => {
@@ -104,7 +83,7 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
 
   return (
     <div className="flex flex-col h-full bg-slate-50 max-w-2xl mx-auto shadow-sm border-x border-slate-200">
-      {/* HEADER BARU - Lebih bersih dengan Tombol Keluar */}
+      {/* HEADER */}
       <header className="p-4 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-sky-100 rounded-2xl flex items-center justify-center border-b-4 border-sky-200">
@@ -119,7 +98,6 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
           </div>
         </div>
 
-        {/* Tombol Keluar Pindah ke Sini */}
         <button
           onClick={onExit}
           className="px-4 py-2 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest border-b-4 border-rose-200 hover:bg-rose-100 active:border-b-0 active:translate-y-1 transition-all flex items-center gap-1"
@@ -133,7 +111,6 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth pb-32">
         <AnimatePresence initial={false}>
           {messages.map((msg) => {
-            // Logika Pembagian 3 Kondisi Pengguna
             const isHost = msg.sender === 'host';
             const isMe = msg.sender === 'guest' && msg.senderName === currentGuestName;
             const isOtherGuest = msg.sender === 'guest' && !isMe;
@@ -145,7 +122,6 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
               >
-                {/* Tampilkan Label Nama Jika Itu Adalah Tamu Lain */}
                 {isOtherGuest && (
                   <div className="flex items-center gap-1 mb-1 ml-2">
                     <div
@@ -190,10 +166,8 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
         </AnimatePresence>
       </div>
 
-      {/* Area Kontrol Bawah (Input & Mic) - Tetap Sama */}
+      {/* Area Kontrol Bawah */}
       <div className="fixed bottom-0 left-0 right-0 max-w-2xl mx-auto p-4 bg-white border-t-2 border-slate-200 space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40">
-
-        {/* Emotion Selector */}
         <div className="flex justify-between items-center bg-slate-50 p-2 rounded-2xl border-2 border-slate-100">
           <div className="flex gap-2">
             {EMOTIONS.map((emo) => {
@@ -215,7 +189,6 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">Pilih Aura Anda</p>
         </div>
 
-        {/* Input & Mic Area */}
         <div className="flex items-center gap-3">
           <div className="relative">
             {isListening && (
