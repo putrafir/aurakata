@@ -115,6 +115,19 @@ export default function Home() {
     }
   }, [isRoomActive, state.phase, state.role]);
 
+  // LOGIKA TRIGGER GEMINI OTOMATIS
+  // Jika pesan terakhir berasal dari Tamu, panggil Gemini untuk menyiapkan balasan Host
+  React.useEffect(() => {
+    if (state.role === 'host' && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+
+      if (lastMessage.sender === 'guest') {
+        generateSmartTemplates(messages);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, state.role]);
+
   // LOGIKA AMAN UNTUK GENERATE URL QR CODE (Mencegah Hydration Error)
   React.useEffect(() => {
     if (typeof window !== 'undefined' && state.roomPin) {
@@ -203,17 +216,27 @@ export default function Home() {
       timestamp: Date.now(),
     });
   };
-
-  // 6. LOGIKA TEMPLATE AI & CUSTOM (SINKRONISASI FIREBASE)
+  // 6. LOGIKA TEMPLATE AI (SINKRONISASI GEMINI)
   const generateSmartTemplates = async (chatHistory: Message[]) => {
-    if (chatHistory.length === 0) return;
     try {
-      console.log("Meminta Gemini menganalisis konteks percakapan...");
-      setTimeout(() => {
-        setSmartTemplates(["Ya, setuju!", "Saya kurang paham", "Bisa diulang?"]);
-      }, 1000);
+      // Tampilkan efek loading pura-pura agar Host tahu AI sedang berpikir
+      setSmartTemplates(["Menganalisis...", "Berpikir...", "✨"]);
+
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: chatHistory })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSmartTemplates(data.templates);
+      } else {
+        setSmartTemplates(["Oke", "Terima kasih", "Tunggu sebentar"]);
+      }
     } catch (error) {
-      console.error("Gagal mendapatkan rekomendasi AI", error);
+      console.error("Gagal memanggil Gemini", error);
+      setSmartTemplates(["Ya", "Tidak", "Mungkin"]);
     }
   };
 
