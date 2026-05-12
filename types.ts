@@ -11,7 +11,7 @@ export interface Message {
 }
 
 export interface AppState {
-  phase: 'init' | 'guest-lobby'| 'chat' | 'profile';
+  phase: 'init' | 'guest-lobby'| 'chat' | 'profile' | 'solo';
   role: 'host' | 'guest';
   roomPin: string;
   guestName?: string;

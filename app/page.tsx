@@ -18,6 +18,7 @@ import { useRoom } from '@/hooks/useRoom';
 import { signInWithPopup, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { ref, get, set } from 'firebase/database'; // <-- PERBAIKAN 1: Import ini wajib ada
+import { SoloListen } from './components/SoloListen';
 
 export default function Home() {
   const [state, setState] = React.useState<AppState>({
@@ -280,6 +281,7 @@ export default function Home() {
             onLogoutClick={handleLogout}
             currentUser={currentUser}
             onProfileClick={() => setState(prev => ({ ...prev, phase: 'profile' }))}
+            onStartSolo={() => setState({ ...state, phase: 'solo', role: 'host' })}
           />
         )}
 
@@ -311,6 +313,17 @@ export default function Home() {
             roomPin={state.roomPin}
             onJoin={handleJoinSuccess}
           />
+        )}
+
+        {state.phase === 'solo' && (
+          <motion.div
+            key="solo-view"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="h-[100dvh]"
+          >
+            <SoloListen onExit={() => setState({ ...state, phase: 'init' })} />
+          </motion.div>
         )}
 
         {/* FASE 3: RUANG OBROLAN UTAMA */}

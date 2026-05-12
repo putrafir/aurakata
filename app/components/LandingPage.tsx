@@ -14,12 +14,14 @@ import {
     QrCode,
     Menu,
     X,
-    LogOut // <-- 1. Saya tambahkan icon LogOut untuk menu mobile
+    LogOut, // <-- 1. Saya tambahkan icon LogOut untuk menu mobile
+    Ear
 } from "lucide-react";
 import Image from 'next/image';
 
 interface LandingPageProps {
     onCreateRoom?: () => void;
+    onStartSolo?: () => void;
     onOpenJoinModal?: () => void;
     onLoginClick?: () => void;
     onLogoutClick?: () => void;
@@ -27,7 +29,7 @@ interface LandingPageProps {
     currentUser?: any;
 }
 
-export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLogoutClick, onProfileClick, currentUser }: LandingPageProps) {
+export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLogoutClick, onProfileClick, currentUser, onStartSolo, }: LandingPageProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     // Fungsi untuk scroll ke atas dengan mulus
@@ -193,23 +195,35 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                         AuraKata menjembatani <b className=" text-slate-800">Teman Tuli</b> dan orang dengar dengan teks yang bergetar sesuai emosi. Ngobrol langsung lewat browser tanpa aplikasi tambahan.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        {/* 3D Button - Host (Tuli) */}
-                        <button
-                            onClick={onCreateRoom}
-                            className="group relative bg-emerald-500 text-white border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full sm:w-auto"
-                        >
-                            <span className="font-bold text-lg">Buat Obrolan (Host)</span>
-                            <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        </button>
+                    <div className="flex flex-col gap-4 justify-center md:justify-start w-full max-w-xl">
+                        {/* BARIS 1: Host & Tamu Berdampingan */}
+                        <div className="flex flex-col sm:flex-row gap-4 w-full">
+                            {/* 3D Button - Host (Tuli) */}
+                            <button
+                                onClick={onCreateRoom}
+                                className="group relative bg-emerald-500 text-white border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-5 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
+                            >
+                                <span className="font-bold text-lg">Buat Obrolan</span>
+                                <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            </button>
 
-                        {/* 3D Button - Guest (Dengar) */}
+                            {/* 3D Button - Guest (Dengar) */}
+                            <button
+                                onClick={onOpenJoinModal}
+                                className="group relative bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-5 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
+                            >
+                                <span className="font-bold text-lg">Gabung via PIN</span>
+                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </div>
+
+                        {/* BARIS 2: Mode Mendengarkan (Orange) */}
                         <button
-                            onClick={onOpenJoinModal}
-                            className="group relative bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full sm:w-auto"
+                            onClick={onStartSolo}
+                            className="group relative bg-orange-500 text-white border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full"
                         >
-                            <span className="font-bold text-lg">Gabung via PIN (Tamu)</span>
-                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <span className="font-bold text-lg">Mendengarkan Saja (Solo)</span>
                         </button>
                     </div>
                 </motion.div>
