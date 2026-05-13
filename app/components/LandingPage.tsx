@@ -14,8 +14,10 @@ import {
     QrCode,
     Menu,
     X,
-    LogOut, // <-- 1. Saya tambahkan icon LogOut untuk menu mobile
-    Ear
+    LogOut,
+    Ear,
+    Activity,
+    Wind
 } from "lucide-react";
 import Image from 'next/image';
 
@@ -32,7 +34,6 @@ interface LandingPageProps {
 export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLogoutClick, onProfileClick, currentUser, onStartSolo, }: LandingPageProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-    // Fungsi untuk scroll ke atas dengan mulus
     const scrollToTop = () => {
         setIsMobileMenuOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -57,19 +58,17 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                         </span>
                     </div>
 
-                    {/* Desktop Menu */}
                     <div className="hidden md:flex gap-8 items-center">
                         <a href="#misi" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors">Visi Kita</a>
-                        <a href="#fitur" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors">Fitur</a>
+                        <a href="#fitur" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors">Teknologi Inti</a>
 
                         <button
                             onClick={scrollToTop}
                             className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors"
                         >
-                            Masuk Sesi
+                            Mulai Sesi
                         </button>
 
-                        {/* 2. PERBAIKAN: Logika Tampil Profil / Login (Desktop) */}
                         {currentUser ? (
                             <div className="flex items-center gap-3 border-l-2 border-slate-200 pl-6 ml-2">
                                 <button onClick={onProfileClick} className="hover:scale-105 hover:shadow-md transition-all rounded-full">
@@ -98,7 +97,6 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                         )}
                     </div>
 
-                    {/* Mobile Hamburger Button */}
                     <button
                         className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -107,7 +105,6 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                     </button>
                 </nav>
 
-                {/* Mobile Dropdown Menu */}
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <motion.div
@@ -129,16 +126,15 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="text-xs font-black uppercase tracking-widest text-slate-500 py-2 border-b border-slate-100"
                                 >
-                                    Fitur
+                                    Teknologi Inti
                                 </a>
                                 <button
                                     onClick={scrollToTop}
                                     className="text-left text-xs font-black uppercase tracking-widest text-slate-500 py-2 border-b border-slate-100"
                                 >
-                                    Masuk Sesi
+                                    Mulai Sesi
                                 </button>
 
-                                {/* 3. PERBAIKAN: Logika Tampil Profil / Login (Mobile) */}
                                 {currentUser ? (
                                     <div className="flex items-center justify-between py-2 border-b border-slate-100">
                                         <button onClick={onProfileClick} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
@@ -169,7 +165,7 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                 </AnimatePresence>
             </header>
 
-            {/* Hero Section - Padding top ditambah (pt-32) karena navbar fixed */}
+            {/* Hero Section */}
             <section className="max-w-7xl mx-auto px-6 pt-32 pb-24 text-center md:text-left grid md:grid-cols-2 gap-16 items-center">
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -182,49 +178,46 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                             </span>
-                            Bantu teman tuli kita
+                            Visual Typography AI
                         </span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-black text-slate-800 leading-[1.1] tracking-tight mb-6">
-                        Bukan sekadar <span className="text-emerald-500">kata</span>,<br />
-                        tapi melihat <span className="text-sky-500 underline decoration-8 decoration-sky-100 underline-offset-8">rasa</span>.
+                        Menerjemahkan <span className="text-emerald-500">Kata</span>,<br />
+                        Memvisualkan <span className="text-sky-500 underline decoration-8 decoration-sky-100 underline-offset-8">Rasa</span>.
                     </h1>
 
                     <p className="text-xl text-slate-500 leading-relaxed mb-10 max-w-lg mx-auto md:mx-0">
-                        AuraKata menjembatani <b className=" text-slate-800">Teman Tuli</b> dan orang dengar dengan teks yang bergetar sesuai emosi. Ngobrol langsung lewat browser tanpa aplikasi tambahan.
+                        AuraKata menjembatani <b className="text-slate-800">Teman Tuli</b> dan masyarakat luas dengan teks yang hidup. Emosi, volume, dan nada suara diubah menjadi visual yang dapat dilihat secara *real-time*.
                     </p>
 
                     <div className="flex flex-col gap-4 justify-center md:justify-start w-full max-w-xl">
-                        {/* BARIS 1: Host & Tamu Berdampingan */}
-                        <div className="flex flex-col sm:flex-row gap-4 w-full">
-                            {/* 3D Button - Host (Tuli) */}
-                            <button
-                                onClick={onCreateRoom}
-                                className="group relative bg-emerald-500 text-white border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-5 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
-                            >
-                                <span className="font-bold text-lg">Buat Obrolan</span>
-                                <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            </button>
-
-                            {/* 3D Button - Guest (Dengar) */}
-                            <button
-                                onClick={onOpenJoinModal}
-                                className="group relative bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-5 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
-                            >
-                                <span className="font-bold text-lg">Gabung via PIN</span>
-                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </div>
-
-                        {/* BARIS 2: Mode Mendengarkan (Orange) */}
+                        {/* Mode Mendengarkan (Orange) - Dipindah ke atas karena ini fitur SoloListen terbaru */}
                         <button
                             onClick={onStartSolo}
                             className="group relative bg-orange-500 text-white border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full"
                         >
                             <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            <span className="font-bold text-lg">Mendengarkan Saja (Solo)</span>
+                            <span className="font-bold text-lg">Mode Dengarkan (Tatap Muka)</span>
                         </button>
+
+                        <div className="flex flex-col sm:flex-row gap-4 w-full mt-2">
+                            <button
+                                onClick={onCreateRoom}
+                                className="group relative bg-emerald-500 text-white border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-4 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
+                            >
+                                <span className="font-bold text-base">Buat Ruang Grup</span>
+                                <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            </button>
+
+                            <button
+                                onClick={onOpenJoinModal}
+                                className="group relative bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-4 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
+                            >
+                                <span className="font-bold text-base">Gabung via PIN / QR</span>
+                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -295,12 +288,12 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
 
                                 <div className="pt-4 flex flex-col items-center gap-2">
                                     <div className="flex gap-2">
-                                        <span className="px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[9px] font-black text-emerald-600 tracking-tighter uppercase">Joy: 98%</span>
-                                        <span className="px-3 py-1 bg-sky-50 border border-sky-100 rounded-full text-[9px] font-black text-sky-600 tracking-tighter uppercase">Excited: 92%</span>
+                                        <span className="px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[9px] font-black text-emerald-600 tracking-tighter uppercase">NLP: Happy</span>
+                                        <span className="px-3 py-1 bg-sky-50 border border-sky-100 rounded-full text-[9px] font-black text-sky-600 tracking-tighter uppercase">Hybrid: Calibrated</span>
                                     </div>
                                     <div className="italic text-[10px] font-bold text-slate-400 flex items-center gap-2">
                                         <Sparkles className="w-3 h-3 text-amber-400" />
-                                        AI mendeteksi aura: Sangat Ceria
+                                        Visual Aura: Sangat Ceria (Positif)
                                     </div>
                                 </div>
                             </div>
@@ -339,7 +332,6 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
             <section id="misi" className="bg-white border-y-2 border-slate-200 py-24 scroll-mt-24">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-16">
-                        {/* 4. PERBAIKAN TYPO: text-xls diganti jadi text-xs */}
                         <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Misi Kami</span>
                         <h2 className="text-4xl font-black text-slate-800 mt-2 tracking-tight">Meruntuhkan Tembok Komunikasi</h2>
                     </div>
@@ -348,18 +340,18 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                         {[
                             {
                                 icon: <Smile className="w-8 h-8 text-emerald-500" />,
-                                title: "Kembalikan Emosi",
-                                desc: "Teks yang datar seringkali salah diartikan. AuraKata memvisualisasikan nada suara ke dalam estetika teks."
+                                title: "Kembalikan Konteks Emosi",
+                                desc: "Teks yang datar seringkali salah diartikan. AuraKata memvisualisasikan nada suara dan intensitas volume ke dalam estetika balon obrolan yang dinamis."
                             },
                             {
                                 icon: <Zap className="w-8 h-8 text-sky-500" />,
-                                title: "Tanpa Delay Ketik",
-                                desc: "Speech-to-text instan yang membuat percakapan mengalir alami tanpa harus menunggu satu sama lain selesai mengetik."
+                                title: "Respons Akurat & Mengalir",
+                                desc: "Dilengkapi Sensor Jeda Napas (Smart Silence) yang menunggu lawan bicara selesai bercerita sebelum menerjemahkannya menjadi satu kalimat utuh."
                             },
                             {
-                                icon: <MessageSquare className="w-8 h-8 text-indigo-500" />,
-                                title: "Inklusif & Publik",
-                                desc: "Gunakan untuk nongkrong di kafe, belanja di kasir, atau rapat grup dengan QR Code yang cepat."
+                                icon: <MessageSquare className="w-8 h-8 text-orange-500" />,
+                                title: "Inklusif Tanpa Hambatan",
+                                desc: "Mode Solo untuk interaksi langsung di kasir atau kafe, dan Mode Ruangan berbasis QR Code untuk rapat jarak jauh. Semuanya tanpa perlu instal aplikasi."
                             }
                         ].map((card, idx) => (
                             <motion.div
@@ -388,7 +380,7 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-4 pt-12">
                                     <div className="bg-white border-2 border-emerald-200 p-6 rounded-[32px] shadow-sm">
-                                        <Heart className="text-emerald-500 mb-3" />
+                                        <Activity className="text-emerald-500 mb-3" />
                                         <div className="h-2 w-full bg-emerald-100 rounded-full mb-2 overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
@@ -397,33 +389,32 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                                                 className="h-full bg-emerald-500"
                                             />
                                         </div>
-                                        <p className="text-[10px] font-black text-slate-400">EMOTION INTENSITY</p>
+                                        <p className="text-[10px] font-black text-slate-400">RELATIVE LOUDNESS</p>
                                     </div>
                                     <div className="bg-white border-2 border-slate-200 p-6 rounded-[32px] shadow-sm">
                                         <QrCode className="text-slate-400 mb-3" />
-                                        <p className="text-sm font-bold text-slate-800">Zero Install QR</p>
-                                        <p className="text-xs text-slate-400">Scan & Ngobrol</p>
+                                        <p className="text-sm font-bold text-slate-800">Ruang Inklusif</p>
+                                        <p className="text-xs text-slate-400">Scan QR & Ngobrol</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="bg-white border-2 border-sky-200 p-6 rounded-[32px] shadow-sm">
-                                        <Sparkles className="text-sky-500 mb-3" />
-                                        <p className="text-sm font-bold text-slate-800">Visual Aura</p>
-                                        <p className="text-xs text-slate-400 italic">Angry vibrato, Happy bounce</p>
+                                    <div className="bg-white border-2 border-orange-200 p-6 rounded-[32px] shadow-sm">
+                                        <Wind className="text-orange-500 mb-3" />
+                                        <p className="text-sm font-bold text-slate-800">Buffer Dinamis</p>
+                                        <p className="text-xs text-slate-400 italic">Deteksi jeda 1.2 detik</p>
                                     </div>
-                                    <div className="bg-white border-2 border-indigo-200 p-6 rounded-[32px] shadow-sm translate-y-8">
-                                        <MessageSquare className="text-indigo-500 mb-3" />
-                                        <p className="text-sm font-bold text-slate-800">Smart Templates</p>
-                                        <p className="text-xs text-slate-400">Balasan cepat AI</p>
+                                    <div className="bg-white border-2 border-sky-200 p-6 rounded-[32px] shadow-sm translate-y-8">
+                                        <Sparkles className="text-sky-500 mb-3" />
+                                        <p className="text-sm font-bold text-slate-800">IndoBERT AI</p>
+                                        <p className="text-xs text-slate-400">Analisis Sentimen Kata</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="order-1 md:order-2">
-                            {/* 5. PERBAIKAN TYPO: text-xls diganti jadi text-xs */}
-                            <span className="text-xs font-black uppercase tracking-widest text-sky-600">Teknologi Inklusi</span>
-                            <h2 className="text-4xl font-black text-slate-800 mt-2 mb-8 tracking-tight">Solusi Pintar untuk Setiap Kata</h2>
+                            <span className="text-xs font-black uppercase tracking-widest text-sky-600">Arsitektur Tingkat Lanjut</span>
+                            <h2 className="text-4xl font-black text-slate-800 mt-2 mb-8 tracking-tight">Lebih dari Sekadar Transkrip Biasa</h2>
 
                             <ul className="space-y-8">
                                 <li className="flex gap-5">
@@ -431,26 +422,26 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                                         <span className="font-black text-emerald-500">01</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-slate-800 mb-1">AI Visual Sentiment</h4>
-                                        <p className="text-slate-500 text-sm">Teks bertukar bentuk: Bergetar jika marah, membulat jika ceria, dan memudar jika sedih.</p>
+                                        <h4 className="font-bold text-slate-800 mb-1">Hybrid Logic Engine</h4>
+                                        <p className="text-slate-500 text-sm">Menggabungkan kecerdasan linguistik NLP dari *microservice* AI dengan sensor fisika (lonjakan volume) untuk mencegah misinterpretasi pada bahasa santai/gaul.</p>
                                     </div>
                                 </li>
                                 <li className="flex gap-5">
                                     <div className="flex-shrink-0 w-12 h-12 bg-white border-2 border-slate-200 rounded-2xl flex items-center justify-center shadow-sm">
-                                        <span className="font-black text-sky-500">02</span>
+                                        <span className="font-black text-orange-500">02</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-slate-800 mb-1">Zero-install QR Lobby</h4>
-                                        <p className="text-slate-500 text-sm">Tamu cukup pindai kode QR untuk masuk ke ruang obrolan. Tanpa ribet unduh aplikasi.</p>
+                                        <h4 className="font-bold text-slate-800 mb-1">Smart Sentence Accumulator</h4>
+                                        <p className="text-slate-500 text-sm">Tidak memotong kalimat di tengah jalan. Sistem dengan sabar menampung ucapan dan baru memprosesnya saat mendeteksi jeda napas yang natural.</p>
                                     </div>
                                 </li>
                                 <li className="flex gap-5">
                                     <div className="flex-shrink-0 w-12 h-12 bg-white border-2 border-slate-200 rounded-2xl flex items-center justify-center shadow-sm">
-                                        <span className="font-black text-indigo-500">03</span>
+                                        <span className="font-black text-sky-500">03</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-slate-800 mb-1">Haptic Feedback</h4>
-                                        <p className="text-slate-500 text-sm">Getaran pada ponsel sesuai intensitas suara yang masuk, memberi rasa kehadiran fisik suara.</p>
+                                        <h4 className="font-bold text-slate-800 mb-1">Kalibrasi Ruangan (Ambient)</h4>
+                                        <p className="text-slate-500 text-sm">Secara otomatis menyesuaikan standar kebisingan ruangan. Berbicara di perpustakaan atau di kafe yang ramai, akurasi deteksi emosi tetap terjaga.</p>
                                     </div>
                                 </li>
                             </ul>
@@ -475,13 +466,13 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                     </div>
 
                     <p className="text-slate-500 font-medium mb-8">
-                        Membangun dunia di mana suara bisa didengar melalui pandangan mata.
+                        Membangun dunia di mana suara bisa dirasakan melalui pandangan mata.
                     </p>
 
                     <div className="flex items-center justify-center gap-6 mb-12">
                         <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
                             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Privasi Terjamin: Sesi langsung terhapus</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Data Diproses Real-time & Tidak Disimpan</span>
                         </div>
                     </div>
 
