@@ -155,7 +155,7 @@ export function SoloListen({ onExit }: SoloListenProps) {
                                     let nlpSentiment = data.sentiment;
                                     const relativeLoudness = currentVol - ambient;
 
-                                    console.log(`🎤 Teks Utuh: "${finalCompleteSentence}" | 🚀 LONJAKAN: ${relativeLoudness.toFixed(1)} | 🧠 NLP: ${nlpSentiment}`);
+                                    // console.log(`🎤 Teks Utuh: "${finalCompleteSentence}" | 🚀 LONJAKAN: ${relativeLoudness.toFixed(1)} | 🧠 NLP: ${nlpSentiment}`);
 
                                     let finalSentiment: Sentiment = 'neutral';
 
