@@ -198,7 +198,7 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                             className="group relative bg-orange-500 text-white border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full"
                         >
                             <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            <span className="font-bold text-lg">Mode Dengarkan (Tatap Muka)</span>
+                            <span className="font-bold text-lg">Mode Dengarkan</span>
                         </button>
 
                         <div className="flex flex-col sm:flex-row gap-4 w-full mt-2">
