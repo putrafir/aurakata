@@ -172,7 +172,7 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <div className="inline-block px-4 py-1.5 mb-6 bg-emerald-100 border-2 border-emerald-200 rounded-full">
+                    {/* <div className="inline-block px-4 py-1.5 mb-6 bg-emerald-100 border-2 border-emerald-200 rounded-full">
                         <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -180,7 +180,7 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                             </span>
                             Visual Typography AI
                         </span>
-                    </div>
+                    </div> */}
 
                     <h1 className="text-5xl md:text-7xl font-black text-slate-800 leading-[1.1] tracking-tight mb-6">
                         Menerjemahkan <span className="text-emerald-500">Kata</span>,<br />
@@ -188,7 +188,7 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                     </h1>
 
                     <p className="text-xl text-slate-500 leading-relaxed mb-10 max-w-lg mx-auto md:mx-0">
-                        AuraKata menjembatani <b className="text-slate-800">Teman Tuli</b> dan masyarakat luas dengan teks yang hidup. Emosi, volume, dan nada suara diubah menjadi visual yang dapat dilihat secara *real-time*.
+                        AuraKata menjembatani <b className="text-slate-800">Teman Tuli</b> dan masyarakat luas dengan teks yang hidup. Emosi, volume, dan nada suara diubah menjadi visual yang dapat dilihat secara real-time.
                     </p>
 
                     <div className="flex flex-col gap-4 justify-center md:justify-start w-full max-w-xl">
@@ -197,8 +197,8 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
                             onClick={onStartSolo}
                             className="group relative bg-orange-500 text-white border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full"
                         >
-                            <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             <span className="font-bold text-lg">Mode Dengarkan</span>
+                            <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         </button>
 
                         <div className="flex flex-col sm:flex-row gap-4 w-full mt-2">
