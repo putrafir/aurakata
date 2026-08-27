@@ -166,167 +166,168 @@ export function LandingPage({ onCreateRoom, onOpenJoinModal, onLoginClick, onLog
             </header>
 
             {/* Hero Section */}
-            <section className="max-w-7xl mx-auto px-6 pt-32 pb-24 text-center md:text-left grid md:grid-cols-2 gap-16 items-center">
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6 }}
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 md:pt-32 pb-16 md:pb-24 text-center md:text-left grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center overflow-hidden md:overflow-visible">
+    {/* Kolom Teks & CTA */}
+    <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex flex-col items-center md:items-start z-10"
+    >
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-slate-800 leading-[1.15] tracking-tight mb-4 md:mb-6">
+            Menerjemahkan <span className="text-emerald-500">Kata</span>,<br />
+            Memvisualkan <span className="text-sky-500 underline decoration-4 md:decoration-8 decoration-sky-100 underline-offset-4 md:underline-offset-8">Rasa</span>.
+        </h1>
+
+        <p className="text-base sm:text-lg md:text-xl text-slate-500 leading-relaxed mb-8 md:mb-10 max-w-sm sm:max-w-lg mx-auto md:mx-0">
+            AuraKata menjembatani <b className="text-slate-800">Teman Tuli</b> dan masyarakat luas dengan teks yang hidup. Emosi, volume, dan nada suara diubah menjadi visual yang dapat dilihat secara real-time.
+        </p>
+
+        <div className="flex flex-col gap-3 sm:gap-4 justify-center md:justify-start w-full max-w-md md:max-w-xl mx-auto md:mx-0">
+            {/* Mode Mendengarkan */}
+            <button
+                onClick={onStartSolo}
+                className="group relative bg-orange-500 text-white border-b-4 md:border-b-8 border-orange-700 active:border-b-0 active:translate-y-1 md:active:translate-y-2 rounded-xl md:rounded-2xl px-6 py-4 md:px-8 md:py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full"
+            >
+                <span className="font-bold text-base md:text-lg">Mode Dengarkan</span>
+                <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </button>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full mt-1 md:mt-2">
+                <button
+                    onClick={onCreateRoom}
+                    className="group relative bg-emerald-500 text-white border-b-4 md:border-b-8 border-emerald-700 active:border-b-0 active:translate-y-1 md:active:translate-y-2 rounded-xl md:rounded-2xl px-5 py-3.5 md:px-6 md:py-4 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
                 >
-                    {/* <div className="inline-block px-4 py-1.5 mb-6 bg-emerald-100 border-2 border-emerald-200 rounded-full">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 flex items-center gap-2">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                            Visual Typography AI
-                        </span>
-                    </div> */}
+                    <span className="font-bold text-sm md:text-base">Buat Ruang Grup</span>
+                    <Mic className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+                </button>
 
-                    <h1 className="text-5xl md:text-7xl font-black text-slate-800 leading-[1.1] tracking-tight mb-6">
-                        Menerjemahkan <span className="text-emerald-500">Kata</span>,<br />
-                        Memvisualkan <span className="text-sky-500 underline decoration-8 decoration-sky-100 underline-offset-8">Rasa</span>.
-                    </h1>
+                <button
+                    onClick={onOpenJoinModal}
+                    className="group relative bg-sky-500 text-white border-b-4 md:border-b-8 border-sky-700 active:border-b-0 active:translate-y-1 md:active:translate-y-2 rounded-xl md:rounded-2xl px-5 py-3.5 md:px-6 md:py-4 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
+                >
+                    <span className="font-bold text-sm md:text-base">Gabung via PIN / QR</span>
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+        </div>
+    </motion.div>
 
-                    <p className="text-xl text-slate-500 leading-relaxed mb-10 max-w-lg mx-auto md:mx-0">
-                        AuraKata menjembatani <b className="text-slate-800">Teman Tuli</b> dan masyarakat luas dengan teks yang hidup. Emosi, volume, dan nada suara diubah menjadi visual yang dapat dilihat secara real-time.
-                    </p>
+    {/* Hero Visual - Sekarang tampil di mobile dengan ukuran yang disesuaikan */}
+    <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="relative w-full max-w-sm sm:max-w-md md:max-w-full mx-auto mt-8 md:mt-0"
+    >
+        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-100 to-sky-100 rounded-[32px] md:rounded-[48px] blur-2xl md:blur-3xl -z-10 opacity-60"></div>
+        <div className="bg-white border-2 border-slate-200 rounded-[24px] md:rounded-[40px] shadow-xl md:shadow-2xl relative overflow-hidden group">
+            
+            {/* Browser Header Chrome */}
+            <div className="bg-slate-50 border-b-2 border-slate-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+                <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-400/80" />
+                    <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-amber-400/80" />
+                    <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-emerald-400/80" />
+                </div>
+                <div className="bg-slate-200/50 px-3 md:px-4 py-1 rounded-md md:rounded-lg">
+                    <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400">aurakata.app</span>
+                </div>
+                <div className="w-8 md:w-12 h-1 bg-slate-200 rounded-full" />
+            </div>
 
-                    <div className="flex flex-col gap-4 justify-center md:justify-start w-full max-w-xl">
-                        {/* Mode Mendengarkan (Orange) - Dipindah ke atas karena ini fitur SoloListen terbaru */}
-                        <button
-                            onClick={onStartSolo}
-                            className="group relative bg-orange-500 text-white border-b-8 border-orange-700 active:border-b-0 active:translate-y-2 rounded-2xl px-8 py-5 transition-all duration-75 flex items-center justify-center gap-3 w-full"
-                        >
-                            <span className="font-bold text-lg">Mode Dengarkan</span>
-                            <Ear className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        </button>
+            <div className="p-5 sm:p-6 md:p-8 space-y-5 md:space-y-6">
+                {/* Voice Waves Decoration */}
+                <div className="flex items-center gap-1 mb-4 md:mb-8 opacity-40">
+                    {[...Array(8)].map((_, i) => ( // Dikurangi menjadi 8 agar tidak penuh di HP
+                        <motion.div
+                            key={i}
+                            animate={{ height: [4, 12, 4] }}
+                            transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
+                            className="w-1 bg-emerald-500 rounded-full hidden sm:block"
+                        />
+                    ))}
+                    {[...Array(6)].map((_, i) => ( // Versi mobile wave
+                        <motion.div
+                            key={`mob-${i}`}
+                            animate={{ height: [4, 10, 4] }}
+                            transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
+                            className="w-1 bg-emerald-500 rounded-full sm:hidden"
+                        />
+                    ))}
+                    <span className="text-[9px] md:text-[10px] font-black text-slate-400 ml-1 md:ml-2 uppercase tracking-wide">Audio Input Active</span>
+                </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 w-full mt-2">
-                            <button
-                                onClick={onCreateRoom}
-                                className="group relative bg-emerald-500 text-white border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-4 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
-                            >
-                                <span className="font-bold text-base">Buat Ruang Grup</span>
-                                <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            </button>
-
-                            <button
-                                onClick={onOpenJoinModal}
-                                className="group relative bg-sky-500 text-white border-b-8 border-sky-700 active:border-b-0 active:translate-y-2 rounded-2xl px-6 py-4 transition-all duration-75 flex flex-1 items-center justify-center gap-2"
-                            >
-                                <span className="font-bold text-base">Gabung via PIN / QR</span>
-                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
+                {/* Simulated Chat Interface */}
+                <div className="space-y-4 md:space-y-6">
+                    <div className="flex gap-2 md:gap-3">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-emerald-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-200">
+                            <span className="text-white font-black text-[10px] md:text-xs">HT</span>
+                        </div>
+                        <div className="bg-slate-100 p-3.5 md:p-5 rounded-[20px] md:rounded-[24px] rounded-tl-none max-w-[85%] border border-slate-200/50">
+                            <p className="font-bold text-slate-800 text-sm md:text-base leading-tight">"Besok jadi nongkrong di cafe?"</p>
                         </div>
                     </div>
-                </motion.div>
 
-                {/* Hero Visual */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="relative hidden md:block"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-100 to-sky-100 rounded-[48px] blur-3xl -z-10 opacity-60"></div>
-                    <div className="bg-white border-2 border-slate-200 rounded-[40px] shadow-2xl relative overflow-hidden group">
-                        {/* Browser Header Chrome */}
-                        <div className="bg-slate-50 border-b-2 border-slate-200 px-6 py-4 flex items-center justify-between">
-                            <div className="flex gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-red-400/80" />
-                                <div className="w-3 h-3 rounded-full bg-amber-400/80" />
-                                <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
-                            </div>
-                            <div className="bg-slate-200/50 px-4 py-1 rounded-lg">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">aurakata.app</span>
-                            </div>
-                            <div className="w-12 h-1 bg-slate-200 rounded-full" />
+                    <div className="flex gap-2 md:gap-3 flex-row-reverse">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-sky-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-sky-200">
+                            <span className="text-white font-black text-[10px] md:text-xs">TM</span>
                         </div>
-
-                        <div className="p-8 space-y-6">
-                            {/* Voice Waves Decoration */}
-                            <div className="flex items-center gap-1 mb-8 opacity-40">
-                                {[...Array(12)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        animate={{ height: [4, 12, 4] }}
-                                        transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
-                                        className="w-1 bg-emerald-500 rounded-full"
-                                    />
-                                ))}
-                                <span className="text-[10px] font-black text-slate-300 ml-2 uppercase tracking-wide">Audio Input Active</span>
-                            </div>
-
-                            {/* Simulated Chat Interface */}
-                            <div className="space-y-6">
-                                <div className="flex gap-3">
-                                    <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-200">
-                                        <span className="text-white font-black text-xs">HT</span>
-                                    </div>
-                                    <div className="bg-slate-100 p-5 rounded-[24px] rounded-tl-none max-w-[85%] border border-slate-200/50">
-                                        <p className="font-bold text-slate-800 leading-tight">"Besok jadi nongkrong di cafe?"</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-3 flex-row-reverse">
-                                    <div className="w-10 h-10 rounded-2xl bg-sky-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-sky-200">
-                                        <span className="text-white font-black text-xs">TM</span>
-                                    </div>
-                                    <div className="bg-sky-500 p-5 rounded-[24px] rounded-tr-none max-w-[85%] shadow-lg shadow-sky-100">
-                                        <motion.p
-                                            animate={{
-                                                scale: [1, 1.03, 1],
-                                                rotate: [0, 0.5, 0, -0.5, 0]
-                                            }}
-                                            transition={{ repeat: Infinity, duration: 2.5 }}
-                                            className="font-black text-white italic text-lg leading-tight tracking-tight"
-                                        >
-                                            "JADI DONG! GAK SABAR! ✨"
-                                        </motion.p>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 flex flex-col items-center gap-2">
-                                    <div className="flex gap-2">
-                                        <span className="px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[9px] font-black text-emerald-600 tracking-tighter uppercase">NLP: Happy</span>
-                                        <span className="px-3 py-1 bg-sky-50 border border-sky-100 rounded-full text-[9px] font-black text-sky-600 tracking-tighter uppercase">Hybrid: Calibrated</span>
-                                    </div>
-                                    <div className="italic text-[10px] font-bold text-slate-400 flex items-center gap-2">
-                                        <Sparkles className="w-3 h-3 text-amber-400" />
-                                        Visual Aura: Sangat Ceria (Positif)
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="bg-sky-500 p-3.5 md:p-5 rounded-[20px] md:rounded-[24px] rounded-tr-none max-w-[85%] shadow-lg shadow-sky-100">
+                            <motion.p
+                                animate={{
+                                    scale: [1, 1.03, 1],
+                                    rotate: [0, 0.5, 0, -0.5, 0]
+                                }}
+                                transition={{ repeat: Infinity, duration: 2.5 }}
+                                className="font-black text-white italic text-base md:text-lg leading-tight tracking-tight"
+                            >
+                                "JADI DONG! GAK SABAR! ✨"
+                            </motion.p>
                         </div>
-
-                        {/* Floating UI Elements Overlays */}
-                        <motion.div
-                            animate={{ y: [0, -10, 0] }}
-                            transition={{ repeat: Infinity, duration: 4 }}
-                            className="absolute -top-6 -right-6 bg-white border-2 border-emerald-500/20 p-4 rounded-3xl shadow-xl z-20 flex flex-col items-center gap-1"
-                        >
-                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                                <Smile className="w-5 h-5 text-emerald-600" />
-                            </div>
-                            <span className="text-[10px] font-black text-emerald-600">POSY</span>
-                        </motion.div>
-
-                        <motion.div
-                            animate={{ y: [0, 10, 0] }}
-                            transition={{ repeat: Infinity, duration: 3.5, delay: 1 }}
-                            className="absolute bottom-12 -left-8 bg-white border-2 border-slate-200 p-3 rounded-2xl shadow-lg z-20 flex gap-3 items-center"
-                        >
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Stability</span>
-                                <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-sky-500 w-[90%]" />
-                                </div>
-                            </div>
-                            <Heart className="w-4 h-4 text-rose-400 animate-pulse" />
-                        </motion.div>
                     </div>
-                </motion.div>
-            </section>
+
+                    <div className="pt-2 md:pt-4 flex flex-col items-center gap-1.5 md:gap-2">
+                        <div className="flex gap-1.5 md:gap-2 flex-wrap justify-center">
+                            <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[8px] md:text-[9px] font-black text-emerald-600 tracking-tighter uppercase">NLP: Happy</span>
+                            <span className="px-2.5 py-1 bg-sky-50 border border-sky-100 rounded-full text-[8px] md:text-[9px] font-black text-sky-600 tracking-tighter uppercase">Hybrid: Calibrated</span>
+                        </div>
+                        <div className="italic text-[9px] md:text-[10px] font-bold text-slate-400 flex items-center gap-1.5 md:gap-2">
+                            <Sparkles className="w-2.5 h-2.5 md:w-3 md:h-3 text-amber-400" />
+                            Visual Aura: Sangat Ceria (Positif)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Floating UI Elements - Disesuaikan posisinya agar tidak off-screen di HP */}
+            <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 4 }}
+                className="absolute -top-3 -right-2 md:-top-6 md:-right-6 bg-white border-2 border-emerald-500/20 p-2 md:p-4 rounded-xl md:rounded-3xl shadow-xl z-20 flex flex-col items-center gap-1"
+            >
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Smile className="w-3.5 h-3.5 md:w-5 md:h-5 text-emerald-600" />
+                </div>
+                <span className="text-[8px] md:text-[10px] font-black text-emerald-600">POSY</span>
+            </motion.div>
+
+            <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ repeat: Infinity, duration: 3.5, delay: 1 }}
+                className="absolute bottom-6 -left-2 md:bottom-12 md:-left-8 bg-white border-2 border-slate-200 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-lg z-20 flex gap-2 md:gap-3 items-center"
+            >
+                <div className="flex flex-col">
+                    <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest">Stability</span>
+                    <div className="w-12 md:w-16 h-1 md:h-1.5 bg-slate-100 rounded-full overflow-hidden mt-0.5">
+                        <div className="h-full bg-sky-500 w-[90%]" />
+                    </div>
+                </div>
+                <Heart className="w-3 h-3 md:w-4 md:h-4 text-rose-400 animate-pulse" />
+            </motion.div>
+        </div>
+    </motion.div>
+</section>
 
             {/* Why AuraKata */}
             <section id="misi" className="bg-white border-y-2 border-slate-200 py-24 scroll-mt-24">
