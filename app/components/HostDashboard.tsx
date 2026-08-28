@@ -28,13 +28,20 @@ export function HostDashboard({ messages, onReply, openQR, smartTemplates, custo
   const [inputText, setInputText] = React.useState('');
   const [selectedSentiment, setSelectedSentiment] = React.useState<Sentiment>('neutral');
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  React.useEffect(() => {
+  const scrollToBottom = React.useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, []);
+
+  React.useEffect(() => {
+    scrollToBottom();
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
+  }, [messages, scrollToBottom]);
 
   // NLP Debounce Logic
   React.useEffect(() => {
@@ -43,17 +50,19 @@ export function HostDashboard({ messages, onReply, openQR, smartTemplates, custo
     if (inputText.trim().length > 0) {
       debounceTimerRef.current = setTimeout(async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/analyze`, {
+          const res = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: inputText.trim() })
           });
           if (res.ok) {
             const data = await res.json();
-            setSelectedSentiment(data.sentiment as Sentiment);
+            if (data?.sentiment) {
+              setSelectedSentiment(data.sentiment as Sentiment);
+            }
           }
-        } catch (error) {
-          console.error("Gagal mendeteksi emosi:", error);
+        } catch {
+          // Abaikan jika offline atau gagal agar tidak memunculkan error merah di console
         }
       }, 800);
     }
@@ -101,7 +110,7 @@ export function HostDashboard({ messages, onReply, openQR, smartTemplates, custo
         </div>
       </header>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-8 scroll-smooth pb-8">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-8 pb-8">
         <AnimatePresence initial={false}>
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
@@ -158,6 +167,7 @@ export function HostDashboard({ messages, onReply, openQR, smartTemplates, custo
             </motion.div>
           ))}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 bg-white border-t-2 border-slate-200 space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] relative z-30">

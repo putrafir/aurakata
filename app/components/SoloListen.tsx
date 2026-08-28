@@ -40,10 +40,20 @@ export function SoloListen({ onExit }: SoloListenProps) {
     const sentenceBufferRef = React.useRef<string>('');
     const silenceTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = React.useCallback(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, []);
+
     // Auto-scroll ke bawah saat ada teks baru
     React.useEffect(() => {
-        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, [transcripts, interimText]);
+        scrollToBottom();
+        const timer = setTimeout(scrollToBottom, 100);
+        return () => clearTimeout(timer);
+    }, [transcripts, interimText, scrollToBottom]);
 
     // Fungsi mengukur volume secara real-time
     const measureVolume = () => {
@@ -144,7 +154,7 @@ export function SoloListen({ onExit }: SoloListenProps) {
                         // 3. Tembak AI Python dengan SATU KALIMAT UTUH
                         (async () => {
                             try {
-                                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/analyze`, {
+                                const response = await fetch('/api/analyze', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ text: finalCompleteSentence })
@@ -154,8 +164,6 @@ export function SoloListen({ onExit }: SoloListenProps) {
                                     const data = await response.json();
                                     let nlpSentiment = data.sentiment;
                                     const relativeLoudness = currentVol - ambient;
-
-                                    // console.log(`🎤 Teks Utuh: "${finalCompleteSentence}" | 🚀 LONJAKAN: ${relativeLoudness.toFixed(1)} | 🧠 NLP: ${nlpSentiment}`);
 
                                     let finalSentiment: Sentiment = 'neutral';
 
@@ -179,8 +187,8 @@ export function SoloListen({ onExit }: SoloListenProps) {
                                         msg.id === messageId ? { ...msg, sentiment: finalSentiment } : msg
                                     ));
                                 }
-                            } catch (error) {
-                                console.error("Gagal menghubungi Microservice NLP:", error);
+                            } catch {
+                                // Abaikan jika gagal
                             }
                         })();
                     }
@@ -249,7 +257,7 @@ export function SoloListen({ onExit }: SoloListenProps) {
             </header>
 
             {/* AREA TEKS */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth pb-40">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 pb-40">
                 <AnimatePresence initial={false}>
                     {transcripts.length === 0 && !interimText && !isListening && (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
@@ -304,6 +312,7 @@ export function SoloListen({ onExit }: SoloListenProps) {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                <div ref={messagesEndRef} />
             </div>
 
             {/* TOMBOL MIC BESAR DI BAWAH */}

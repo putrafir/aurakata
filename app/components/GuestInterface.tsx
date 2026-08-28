@@ -27,6 +27,7 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
   const [selectedSentiment, setSelectedSentiment] = React.useState<Sentiment>('neutral');
   const [isSupported, setIsSupported] = React.useState(true);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const recognitionRef = React.useRef<any>(null);
 
   // NLP Debounce untuk Text (Ketik)
@@ -40,12 +41,18 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
   const ambientVolumeRef = React.useRef<number>(40);
   const animationFrameRef = React.useRef<number>(0);
 
-  // Auto-scroll chat
-  React.useEffect(() => {
+  const scrollToBottom = React.useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, []);
+
+  // Auto-scroll chat ke paling bawah
+  React.useEffect(() => {
+    scrollToBottom();
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
+  }, [messages, scrollToBottom]);
 
   // Debounce Logic untuk Text Input (Hanya jalan saat tidak nahan Mic)
   React.useEffect(() => {
@@ -56,17 +63,19 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
     if (inputText.trim().length > 0) {
       debounceTimerRef.current = setTimeout(async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/analyze`, {
+          const res = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: inputText.trim() })
           });
           if (res.ok) {
             const data = await res.json();
-            setSelectedSentiment(data.sentiment as Sentiment);
+            if (data?.sentiment) {
+              setSelectedSentiment(data.sentiment as Sentiment);
+            }
           }
-        } catch (error) {
-          console.error("Gagal mendeteksi emosi teks:", error);
+        } catch {
+          // Abaikan jika gagal
         }
       }, 800);
     }
@@ -179,7 +188,7 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
       const ambient = ambientVolumeRef.current;
       
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/analyze`, {
+        const response = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: finalCompleteSentence })
@@ -209,8 +218,8 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
             }
             setSelectedSentiment(finalSentiment);
         }
-      } catch (err) {
-        console.error("Gagal mendeteksi emosi suara:", err);
+      } catch {
+        // Fallback aman jika offline
       }
     }
   };
@@ -242,7 +251,7 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
       </header>
 
       {/* Chat Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth pb-32">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 pb-6">
         <AnimatePresence initial={false}>
           {messages.map((msg) => {
             const isHost = msg.sender === 'host';
@@ -298,10 +307,11 @@ export function GuestInterface({ messages, onSendMessage, currentGuestName, onEx
             )
           })}
         </AnimatePresence>
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Area Kontrol Bawah */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-2xl mx-auto p-4 bg-white border-t-2 border-slate-200 space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40">
+      <div className="p-4 bg-white border-t-2 border-slate-200 space-y-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] relative z-30">
         <div className="flex justify-between items-center bg-slate-50 p-2 rounded-2xl border-2 border-slate-100">
           <div className="flex gap-2">
             {EMOTIONS.map((emo) => {

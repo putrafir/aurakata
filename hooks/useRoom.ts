@@ -35,13 +35,14 @@ export function useRoom(roomPin: string | null, role: 'host' | 'guest' | null = 
     });
 
     const unsubscribeMessages = onValue(messagesRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const messageList = Object.keys(data).map((key) => ({
-          ...data[key],
-          id: key,
-        }));
-        messageList.sort((a, b) => a.id.localeCompare(b.id));
+      if (snapshot.exists()) {
+        const messageList: Message[] = [];
+        snapshot.forEach((child) => {
+          messageList.push({
+            ...child.val(),
+            id: child.key as string,
+          });
+        });
         setMessages(messageList);
       } else {
         setMessages([]);
